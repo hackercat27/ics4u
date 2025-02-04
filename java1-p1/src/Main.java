@@ -48,7 +48,7 @@ public class Main {
             arr[i] = (int) (Math.random() * (MAX_RAND - MIN_RAND)) + MIN_RAND;
         }
 
-        System.out.printf("Random numbers: %s", Arrays.toString(arr));
+        System.out.printf("Random numbers: %s\n", Arrays.toString(arr));
 
         for (int num : arr) {
             min = Math.min(num, min);
