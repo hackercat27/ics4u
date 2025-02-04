@@ -3,6 +3,8 @@ import java.util.List;
 import java.util.Scanner;
 
 /*
+ * Assignment description:
+ *
  * In this Assignment, I would like you to create a program that does the following:
  * - Creates 10 random 9-digit numbers (kind of like recreating SIN numbers) and print out the array.
  * - Ask a user to check if a number is in the database.
@@ -16,15 +18,31 @@ import java.util.Scanner;
 
 public class Main {
 
+    // database class to handle entries
     private static class Database {
 
-        private static class Entry {
-            int sin = -1;
+        private List<Integer> databaseEntries = new ArrayList<>();
+
+        public boolean hasSIN(int sin) {
+            for (int entry : databaseEntries) {
+                if (entry == sin) {
+                    return true;
+                }
+            }
+            return false;
         }
 
-        public List<Entry> databaseEntries = new ArrayList<>();
+        public void addSIN(int sin) {
+            databaseEntries.add(sin);
+        }
 
+        public int[] getAllEntries() {
+            Integer[] wrapperArray = databaseEntries.toArray(new Integer[0]);
 
+            int[] ret = new int[wrapperArray.length];
+            System.arraycopy(wrapperArray, 0, ret, 0, ret.length);
+            return ret;
+        }
 
     }
 
@@ -32,23 +50,43 @@ public class Main {
 
         Scanner scan = new Scanner(System.in);
 
+        Database db = new Database();
+
+        System.out.println("""
+                           You are logged into the (definitely official) Service Canada user database.
+                           At any point type 'exit' to leave the program.
+                           Enter a SIN to check if it is registered.
+                           """);
+
         while (true) {
 
-            String input = scan.nextLine().toLowerCase();
+            String input = scan.nextLine().toLowerCase().trim();
 
-            if (input.matches(".*exit.*")) {
+            // accept leading and trailing whitepace because programmer paranoia
+            if (input.matches("exit")) {
                 break;
             }
+            /*
+             * regex: we want the user to input a 9 digit number
+             * like 003420804.
+             * this will reject smaller numbers (6, 8 digit numbers)
+             * and negative numbers,
+             * since none of those make sense in the context of a SIN
+             */
+            if (input.matches("[0-9]{3}-[0-9]{3}-[0-9]{3}")) {
 
-            if (input.matches(".*[0-9]{9}")) {
-
+            }
+            else {
+                System.out.printf("'%s' is not a valid SIN.", input);
             }
 
         }
 
+        System.out.println("Logging off.");
+
     }
 
-    public static boolean numberInDatabase() {
+    public static void initializeDatabase(Database db) {
 
     }
 
