@@ -1,5 +1,24 @@
 import java.util.Scanner;
 
+/*
+ * Assignment description:
+ *
+ * - Make an array of size 15 that contains ints
+ * - Fill it with random numbers that range from 1-100
+ * - Print out the array
+ * - Find the largest, find the smallest number.
+ * -    ** Try to do this without sorting the array.
+ * -    ** Create a method that takes one value of the array and compares it to the next,
+ *         where the largest value is always being stored until that is the value to return.
+ *      ** If you are going to do a Google search to support you with this,
+ *         you must be able to explain your logic to Mrs. Di Stefano
+ *
+ * EXTEND: Try to use some of the methods within the Array or Arrays class in the Java library.
+ * EXTEND: Allow the user to set the array size and the smallest and lowest
+ *         numbers that you will use to randomly generate numbers.
+ *         Then print the array and find the largest and smallest numbers.
+ */
+
 public class Main {
 
     private static Scanner scanner;
