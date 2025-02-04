@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Scanner;
 
 /*
@@ -27,7 +28,7 @@ public class Main {
 
         scanner = new Scanner(System.in);
 
-        int MAX_ARRAY_SIZE = 400;
+        int MAX_ARRAY_SIZE = Integer.MAX_VALUE;
         int MIN_ARRAY_SIZE = 1;
 
         int size = getArraySize(MIN_ARRAY_SIZE, MAX_ARRAY_SIZE);
@@ -44,8 +45,10 @@ public class Main {
         int max = Integer.MIN_VALUE;
 
         for (int i = 0; i < arr.length; i++) {
-            arr[i] = (int) (Math.random() * (MAX_RAND - MIN_RAND));
+            arr[i] = (int) (Math.random() * (MAX_RAND - MIN_RAND)) + MIN_RAND;
         }
+
+        System.out.printf("Random numbers: %s", Arrays.toString(arr));
 
         for (int num : arr) {
             min = Math.min(num, min);
@@ -65,7 +68,8 @@ public class Main {
             if (value != null) {
                 System.out.println("That input is not acceptable.");
             }
-            System.out.printf("Enter an integer between %s and %s (inclusive) for random number sample size:\n", min, max);
+            System.out.printf("Enter an integer between %s and %s (inclusive) for random number sample size:\n",
+                              min, max);
 
             String input = scanner.nextLine();
 
@@ -74,12 +78,12 @@ public class Main {
             }
             catch (NumberFormatException ignored) {}
 
-            // prevent comparison against null
+            // prevent comparison against null in while condition
             if (value == null) {
                 value = -1;
             }
 
-            // very technically, we shouldn't trust that max > min
+            // technically, we shouldn't trust that max > min
             // since nothing has actually asserted that
         } while (!(value >= Math.min(min, max) && value <= Math.max(max, min)));
 
