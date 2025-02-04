@@ -28,7 +28,7 @@ public class Main {
 
         scanner = new Scanner(System.in);
 
-        int MAX_ARRAY_SIZE = Integer.MAX_VALUE;
+        int MAX_ARRAY_SIZE = 30;
         int MIN_ARRAY_SIZE = 1;
 
         int size = getArraySize(MIN_ARRAY_SIZE, MAX_ARRAY_SIZE);
