@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 
 /*
@@ -19,9 +20,9 @@ import java.util.Scanner;
 public class Main {
 
     // database class to handle entries
-    private static class Database {
+    public static class Database {
 
-        private List<Integer> databaseEntries = new ArrayList<>();
+        private final List<Integer> databaseEntries = new ArrayList<>();
 
         public boolean hasSIN(int sin) {
             for (int entry : databaseEntries) {
@@ -73,21 +74,36 @@ public class Main {
              * and negative numbers,
              * since none of those make sense in the context of a SIN
              */
-            if (input.matches("[0-9]{3}-[0-9]{3}-[0-9]{3}")) {
+            if (input.matches("[0-9]{9}")) {
+                // input will always be a valid int because we regex matched it
+                int sin = Integer.parseInt(input);
 
+                if (db.hasSIN(sin)) {
+                    System.out.printf("The SIN %09d is registered.\n", sin);
+                }
+                else {
+                    System.out.printf("The SIN %09d not registered.\n", sin);
+                }
             }
             else {
-                System.out.printf("'%s' is not a valid SIN.", input);
+                System.out.printf("""
+                                  '%s' is SIN a valid SIN.
+                                  SINs must be 9-digit numbers with no separation between digits.
+                                  """, input);
             }
 
         }
 
         System.out.println("Logging off.");
 
+        scan.close();
     }
 
     public static void initializeDatabase(Database db) {
-
+        Random r = new Random();
+        for (int i = 0; i < 5; i++) {
+            db.addSIN(1_000_000_000 % Math.abs(r.nextInt()));
+        }
     }
 
 }
