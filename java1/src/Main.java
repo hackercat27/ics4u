@@ -41,7 +41,12 @@ public class Main {
             Integer[] wrapperArray = databaseEntries.toArray(new Integer[0]);
 
             int[] ret = new int[wrapperArray.length];
-            System.arraycopy(wrapperArray, 0, ret, 0, ret.length);
+
+            // copy the array because wrapper class bs
+            for (int i = 0; i < ret.length; i++) {
+                ret[i] = wrapperArray[i];
+            }
+
             return ret;
         }
 
@@ -58,6 +63,17 @@ public class Main {
                            At any point type 'exit' to leave the program.
                            Enter a SIN to check if it is registered.
                            """);
+
+        initializeDatabase(db);
+
+        System.out.print("Dumping database.");
+        for (int sin : db.getAllEntries()) {
+            // format the strings to add leading zeroes
+            // this is why we can't use Arrays.toString()
+            // because i want it to look pretty
+            System.out.printf("\n%09d", sin);
+        }
+        System.out.println();
 
         while (true) {
 
@@ -87,7 +103,7 @@ public class Main {
             }
             else {
                 System.out.printf("""
-                                  '%s' is SIN a valid SIN.
+                                  '%s' is not a valid SIN.
                                   SINs must be 9-digit numbers with no separation between digits.
                                   """, input);
             }
@@ -101,8 +117,8 @@ public class Main {
 
     public static void initializeDatabase(Database db) {
         Random r = new Random();
-        for (int i = 0; i < 5; i++) {
-            db.addSIN(1_000_000_000 % Math.abs(r.nextInt()));
+        for (int i = 0; i < 10; i++) {
+            db.addSIN(Math.abs(r.nextInt()) % 1_000_000_000);
         }
     }
 
