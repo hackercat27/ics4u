@@ -41,7 +41,7 @@ public class Main {
      * Creates an array of at least length 2, and fills it with random numbers
      * before returning it.
      *
-     * @return an array of a random length filled with random numbers.
+     * @return an array of a random length filled with random numbers
      */
     public static int[] getArray() {
         // the assignment specifies to generate an array with a min length of 1, but 2
@@ -59,7 +59,7 @@ public class Main {
      * @param min The minimum value (inclusive) to consider for the array length.
      * @param max The maximum value (inclusive) to consider for the array length.
      * @return {@code true} if the array's length is between min and max (inclusive),
-     *         otherwise {@code false}.
+     *         otherwise {@code false}
      */
     public static boolean isArrayLengthBetween(int[] arr, int min, int max) {
         if (min > max) {
@@ -128,7 +128,7 @@ public class Main {
 
     private static int random(int min, int max) {
         // this will still work even if min > max,
-        // so even though the inputs will be nonsense we'll won't throw an exception
+        // so even though the inputs will be nonsense we won't throw an exception
         // (unlike in the isArrayLengthBetween() method)
         int range = max - min;
         return min + (int) (Math.random() * range);
