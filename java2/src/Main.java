@@ -23,8 +23,6 @@ public class Main {
 
     public static void main(String[] args) {
 
-        // TODO: javadoc for everything else
-
         int[] arr = getArray();
 
         System.out.printf("The first array is %s\n",
@@ -39,6 +37,12 @@ public class Main {
                           getProduct(arr));
     }
 
+    /**
+     * Creates an array of at least length 2, and fills it with random numbers
+     * before returning it.
+     *
+     * @return an array of a random length filled with random numbers.
+     */
     public static int[] getArray() {
         // the assignment specifies to generate an array with a min length of 1, but 2
         // is used here instead to prevent throwing an error with the getProduct() method.
@@ -65,6 +69,15 @@ public class Main {
         return arr.length >= min && arr.length <= max;
     }
 
+    /**
+     * Returns {@code true} if the array contains the smallest element at
+     * the start of the array. {@code} true will still be returned if other
+     * equally small elements are elsewhere in the array.
+     *
+     * @param arr The array to check
+     * @return {@code true} if the smallest element is included at the start of the
+     *         array, otherwise {@code false}
+     */
     public static boolean isSmallestFirst(int[] arr) {
         if (arr.length == 0) {
             // throw a more detailed error rather than just an IndexOutOfBoundsException
@@ -73,6 +86,15 @@ public class Main {
         return arr[0] == getSmallest(arr);
     }
 
+    /**
+     * Returns {@code true} if the array contains the largest element at
+     * the end of the array. {@code true} will still be returned if other
+     * equally large elements are elsewhere in the array.
+     *
+     * @param arr The array to check
+     * @return {@code true} if the smallest element is included at the start of the
+     *         array, otherwise {@code false}
+     */
     public static boolean isLargestLast(int[] arr) {
         if (arr.length == 0) {
             // throw a more detailed error rather than just an IndexOutOfBoundsException
@@ -81,6 +103,13 @@ public class Main {
         return arr[arr.length - 1] == getLargest(arr);
     }
 
+    /**
+     * Returns the product of the first 2 elements in the given array.
+     * The array must be of length 2.
+     *
+     * @param arr Array of at least length 2 to read the first 2 elements from
+     * @return the product of the first 2 elements in the given array
+     */
     public static int getProduct(int[] arr) {
         if (arr.length < 2) {
             // throw a more detailed error rather than just an IndexOutOfBoundsException
