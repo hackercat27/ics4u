@@ -21,20 +21,39 @@ import java.util.Arrays;
 
 public class Main {
 
+    public static String getSuffix(int i) {
+        return switch (i) {
+            case 1 -> "st";
+            case 2 -> "nd";
+            case 3 -> "rd";
+            default -> "th";
+        };
+    }
+
     public static void main(String[] args) {
 
-        int[] arr = getArray();
+        // program has passed the "no, i didn't cheat" conversation
 
-        System.out.printf("The first array is %s\n",
-                          Arrays.toString(arr));
-        System.out.printf("It %s between 5-10 terms.\n",
-                          isArrayLengthBetween(arr, 5, 10)? "has" : "does not have");
-        System.out.printf("The smallest element %s present at the start of the array.\n",
-                          isSmallestFirst(arr)? "is" : "is not");
-        System.out.printf("The largest element %s present at the end of the array.\n",
-                          isLargestLast(arr)? "is" : "is not");
-        System.out.printf("The product of elements 0 and 1 of this array is %d.\n",
-                          getProduct(arr));
+        for (int i = 0; i < 5; i++) {
+            int[] arr = getArray();
+
+            int arrayNumber = i + 1;
+
+            System.out.printf("The %d%s array is %s\n",
+                              arrayNumber, getSuffix(arrayNumber),
+                              Arrays.toString(arr));
+            System.out.printf("It %s between 5-10 terms.\n",
+                              isArrayLengthBetween(arr, 5, 10) ? "has" : "does not have");
+            System.out.printf("The smallest element %s present at the start of the array.\n",
+                              isSmallestFirst(arr) ? "is" : "is not");
+            System.out.printf("The largest element %s present at the end of the array.\n",
+                              isLargestLast(arr) ? "is" : "is not");
+            System.out.printf("The product of elements 0 and 1 of this array is %d.\n",
+                              getProduct(arr));
+
+            System.out.println();
+        }
+
     }
 
     /**
