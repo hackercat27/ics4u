@@ -84,13 +84,11 @@ public class Statistics {
         System.arraycopy(arr, 0, sorted, 0, arr.length);
         Arrays.sort(sorted);
 
-
         boolean twoMedians = arr.length % 2 == 0;
         int middleIndex = arr.length / 2;
 
-
         if (twoMedians) {
-            return mean(new int[] {sorted[middleIndex], sorted[middleIndex + 1]});
+            return mean(new int[] {sorted[middleIndex - 1], sorted[middleIndex]});
         }
         else {
             return sorted[middleIndex];
