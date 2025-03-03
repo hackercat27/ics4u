@@ -2,9 +2,21 @@ import java.util.Arrays;
 
 public class Main {
 
-    public static int[] getArray() {
-        // arbitrarily choose 20, any length really could work
-        int[] arr = new int[20];
+    public static String getHumanReadableIndex(int i) {
+        return String.format("%d%s", i + 1, getSuffix(i + 1));
+    }
+
+    public static String getSuffix(int i) {
+        return switch (i) {
+            case 1 -> "st";
+            case 2 -> "nd";
+            case 3 -> "rd";
+            default -> "th";
+        };
+    }
+
+    public static int[] getArray(int length) {
+        int[] arr = new int[length];
         for (int i = 0; i < arr.length; i++) {
             // generate numbers between 1-100 inclusive
             arr[i] = (int) (Math.random() * 100) + 1;
@@ -15,23 +27,33 @@ public class Main {
 
     public static void main(String[] args) {
 
-        int[] data = getArray();
+        for (int i = 0; i < 5; i++) {
+            int[] data = getArray(i + 20);
 
-        System.out.printf("""
-                          Of the given dataset,
-                          %s
-                          here are some statistics:
-                          mean = %.1f
-                          median = %.1f
-                          mode = %.1f
-                          quartiles:
-                          1 = %.1f
-                          2 = %.1f
-                          3 = %.1f
-                          """,
-                          Arrays.toString(data),
-                          Stats.mean(data), Stats.median(data), Stats.mode(data),
-                          Stats.quartileOne(data), Stats.quartileTwo(data), Stats.quartileThree(data));
+            System.out.printf("""
+                              Here's the %s dataset, of length %d:
+                              %s
+                              Here are some statistics of this dataset:
+                              mean   = %3.1f
+                              median = %3.1f
+                              mode   = %3.1f
+                              quartiles:
+                              1      = %3.1f
+                              2      = %3.1f
+                              3      = %3.1f
+                              """,
+                              getHumanReadableIndex(i),
+                              data.length,
+                              Arrays.toString(data),
+                              Statistics.mean(data),
+                              Statistics.median(data),
+                              Statistics.mode(data),
+                              Statistics.quartileOne(data),
+                              Statistics.quartileTwo(data),
+                              Statistics.quartileThree(data));
+
+            System.out.println();
+        }
     }
 
 }

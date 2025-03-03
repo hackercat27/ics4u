@@ -41,7 +41,10 @@ public class Main {
                 "pull"
         };
 
-        while (true) {
+        // infinite for loop
+        // not 'while (true)' because to me that's confusing - I don't want
+        // to loop until "true" becomes "false", i just want to loop forever
+        for (;;) {
 
             String word = words[(int) (Math.random() * words.length)];
 
@@ -71,9 +74,14 @@ public class Main {
 
     public static void guessLetter(Scanner scan, String s) {
 
-        for (boolean firstTime = true;;firstTime = false) {
+        // admittedly, this is a dubious way to do a for loop,
+        // but it does elegantly solve the problem.
+        // ideally, I would use a goto but java doesn't support those.
+
+        for (boolean firstTime = true;; firstTime = false) {
 
             if (!firstTime) {
+                // if it's not the first time we need to reprompt the user.
                 System.out.println("Guess a letter.");
             }
 
@@ -100,9 +108,10 @@ public class Main {
         }
     }
 
+
     public static void guessWord(Scanner scan, String w) {
 
-        for (boolean firstTime = true;;firstTime = false) {
+        for (boolean firstTime = true;; firstTime = false) {
 
             if (!firstTime) {
                 System.out.println("Guess a " + w.length() + " character word.");
@@ -110,6 +119,7 @@ public class Main {
 
             String input = scan.nextLine().toLowerCase();
 
+            // our input is always lowercase, so no need to check for uppercase characters
             if (!input.matches("[a-z]{" + w.length() + "}")) {
                 System.out.println("That's not a " + w.length() + " character word.");
                 continue;
@@ -132,10 +142,14 @@ public class Main {
         }
         int delta = value.charAt(0) - guess.charAt(0);
         if (delta == 0) {
+            // avoid funny divide by zero
             return 0;
         }
         return delta / Math.abs(delta);
     }
+
+    // these methods aren't actually ever used - I didn't find them useful.
+    // they're here purely for the assignment spec.
 
     public static boolean startsWith(String str, String prefix) {
         return str.matches(prefix + ".*");
