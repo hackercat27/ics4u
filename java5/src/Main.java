@@ -1,6 +1,10 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
@@ -8,9 +12,10 @@ public class Main {
 
     public static void main(String[] args) {
 
-        final int TARGET_VALUE = (int) 1e6;
+        final int TARGET_VALUE = 98304;
         // honestly a massive epsilon but it's what the spec called for
-        final double EPSILON = 500;
+        final double EPSILON = 20;
+
 
         forEach(getFileInputStream("java5/words_alpha.txt"),
                 "\n", // delimit the inputstream by newlines
@@ -22,7 +27,6 @@ public class Main {
                                           line, product, TARGET_VALUE - product);
                     }
                 });
-
     }
 
     public static InputStream getFileInputStream(String path) {
