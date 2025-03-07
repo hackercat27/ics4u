@@ -6,6 +6,25 @@ import java.util.function.Consumer;
 
 public class Main {
 
+    public static void main(String[] args) {
+
+        final int TARGET_VALUE = (int) 1e6;
+        // honestly a massive epsilon but it's what the spec called for
+        final double EPSILON = 500;
+
+        forEach(getFileInputStream("java5/words_alpha.txt"),
+                "\n", // delimit the inputstream by newlines
+                line -> {
+                    int product = getStringProduct(line);
+
+                    if (equals(product, TARGET_VALUE, EPSILON)) {
+                        System.out.printf("'%s' is a million word. product=%d delta=%d\n",
+                                          line, product, TARGET_VALUE - product);
+                    }
+                });
+
+    }
+
     public static InputStream getFileInputStream(String path) {
         try {
             return new FileInputStream(path);
@@ -16,61 +35,16 @@ public class Main {
         }
     }
 
-//    public static String readFile(String path) {
-//        InputStream in = getInputStream(path);
-//        if (in == null) {
-//            return null;
-//        }
-//        Scanner scan = new Scanner(in);
-//        scan.useDelimiter("");
-//
-//        StringBuilder fileBuilder = new StringBuilder();
-//        while (scan.hasNext()) {
-//            fileBuilder.append(scan.next());
-//        }
-//        return fileBuilder.toString();
-//    }
-
-    public static void forEachLine(InputStream in, char separator, Consumer<String> sectionConsumer) {
+    public static void forEach(InputStream in, String separator, Consumer<String> sectionConsumer) {
         if (in == null) {
             return;
         }
         Scanner scan = new Scanner(in);
-        scan.useDelimiter("");
-        StringBuilder sectionBuilder = new StringBuilder();
+        scan.useDelimiter(separator);
 
         while (scan.hasNext()) {
-            char c = scan.next().charAt(0);
-            if (c == separator) {
-                sectionConsumer.accept(sectionBuilder.toString());
-                sectionBuilder.setLength(0);
-            }
-            else {
-                sectionBuilder.append(c);
-            }
+            sectionConsumer.accept(scan.next());
         }
-    }
-
-    public static void forEachLine(InputStream in, Consumer<String> lineConsumer) {
-        forEachLine(in, '\n', lineConsumer);
-    }
-
-    public static void main(String[] args) {
-
-        final int TARGET_VALUE = (int) 1e6;
-        // MASSIVE epsilon but it's what she wrote
-        final double epsilon = 500;
-
-        forEachLine(getFileInputStream("java5/words_alpha.txt"),
-                line -> {
-            int product = getStringProduct(line);
-
-            if (equals(product, TARGET_VALUE, epsilon)) {
-                System.out.printf("'%s' is a million word. product=%d delta=%d\n",
-                                  line, product, TARGET_VALUE - product);
-            }
-        });
-
     }
 
     public static int getStringProduct(String word) {
@@ -87,6 +61,7 @@ public class Main {
         if (values.length == 0) {
             return 1;
         }
+
         int product = 1;
         for (int value : values) {
             product *= value;
