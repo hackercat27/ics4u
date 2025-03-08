@@ -12,14 +12,21 @@ public class Main {
 
     public static void main(String[] args) {
 
-        final int TARGET_VALUE = 98304;
+        final int TARGET_VALUE = (int) 1e6;
         // honestly a massive epsilon but it's what the spec called for
-        final double EPSILON = 20;
+        final double EPSILON = 500;
 
 
-        forEach(getFileInputStream("java5/words_alpha.txt"),
-                "\n", // delimit the inputstream by newlines
-                line -> {
+        FileInputStream in;
+        try {
+            in = new FileInputStream("java5/words_alpha.txt");
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("Could not find file");
+            return;
+        }
+
+        forEach(in, "\n", line -> {
                     int product = getStringProduct(line);
 
                     if (equals(product, TARGET_VALUE, EPSILON)) {
@@ -27,16 +34,6 @@ public class Main {
                                           line, product, TARGET_VALUE - product);
                     }
                 });
-    }
-
-    public static InputStream getFileInputStream(String path) {
-        try {
-            return new FileInputStream(path);
-        }
-        catch (FileNotFoundException e) {
-            System.out.printf("Could not find file '%s'\n", path);
-            return null;
-        }
     }
 
     public static void forEach(InputStream in, String separator, Consumer<String> sectionConsumer) {
