@@ -1,10 +1,6 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
@@ -27,13 +23,13 @@ public class Main {
         }
 
         forEach(in, "\n", line -> {
-                    int product = getStringProduct(line);
+            int product = getStringProduct(line);
 
-                    if (equals(product, TARGET_VALUE, EPSILON)) {
-                        System.out.printf("'%s' is a million word. product=%d delta=%d\n",
-                                          line, product, TARGET_VALUE - product);
-                    }
-                });
+            if (equals(product, TARGET_VALUE, EPSILON)) {
+                System.out.printf("'%s' is a million word.\n",
+                                  line);
+            }
+        });
     }
 
     public static void forEach(InputStream in, String separator, Consumer<String> sectionConsumer) {
