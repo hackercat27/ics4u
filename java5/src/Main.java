@@ -3,6 +3,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
@@ -50,12 +51,9 @@ public class Main {
     }
 
     public static int getStringProduct(String word) {
-        char[] values = word.toLowerCase().toCharArray();
-
-        int[] intValues = new int[values.length];
-        for (int i = 0; i < intValues.length; i++) {
-            intValues[i] = charToInt(values[i]);
-        }
+        int[] intValues = new int[word.length()];
+        Arrays.setAll(intValues, i ->
+                charToInt(word.toLowerCase().charAt(i)));
         return getProduct(intValues);
     }
 
