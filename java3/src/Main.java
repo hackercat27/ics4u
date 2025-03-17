@@ -95,13 +95,13 @@ public class Main {
             int dir = getDirection(s, input);
 
             if (dir < 0) {
-                System.out.println("The real letter is earlier in the alphabet.");
+                System.out.printf("The real letter comes before %s.\n", input);
             }
             else if (dir > 0) {
-                System.out.println("The real letter is later in the alphabet.");
+                System.out.printf("The real letter comes after %s.\n", input);
             }
             else {
-                System.out.println("That's the correct letter.");
+                System.out.printf("%s is the correct letter.\n", input);
                 break;
             }
 
@@ -126,10 +126,10 @@ public class Main {
             }
 
             if (!w.matches(input)) {
-                System.out.println("That's not the correct word.");
+                System.out.printf("%s is not the correct word.\n", input);
             }
             else {
-                System.out.println("That's the correct word.");
+                System.out.printf("%s is the correct word.\n", input);
                 break;
             }
 
