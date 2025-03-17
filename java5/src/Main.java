@@ -1,6 +1,8 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
@@ -32,10 +34,14 @@ public class Main {
     }
 
     public static void forEach(InputStream in, String separator, Consumer<String> sectionConsumer) {
-        if (in == null) {
+        forEach(new InputStreamReader(in), separator, sectionConsumer);
+    }
+
+    public static void forEach(Reader r, String separator, Consumer<String> sectionConsumer) {
+        if (r == null) {
             return;
         }
-        Scanner scan = new Scanner(in);
+        Scanner scan = new Scanner(r);
         scan.useDelimiter(separator);
 
         while (scan.hasNext()) {
@@ -48,9 +54,13 @@ public class Main {
 
         int[] intValues = new int[values.length];
         for (int i = 0; i < intValues.length; i++) {
-            intValues[i] = values[i] - 'a' + 1; // lua indexing. gross
+            intValues[i] = charToInt(values[i]);
         }
         return getProduct(intValues);
+    }
+
+    public static int charToInt(char c) {
+        return c - 'a' + 1; // lua indexing. gross
     }
 
     public static int getProduct(int[] values) {
