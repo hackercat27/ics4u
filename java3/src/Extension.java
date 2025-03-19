@@ -46,6 +46,12 @@ public class Extension {
 
 
 
+
+        // infinite for loop
+        // not 'while (true)' because to me that's confusing - I don't want
+        // to loop until "true" becomes "false", i just want to loop forever
+        for (;;) {
+
         System.out.println("There's " + words.length +
                                    " words in a secret list - what number in the list do you want? "
                                    + "Input a number in the range 1-" + words.length + ".");
@@ -82,19 +88,13 @@ public class Extension {
             break;
         }
 
-
-        // infinite for loop
-        // not 'while (true)' because to me that's confusing - I don't want
-        // to loop until "true" becomes "false", i just want to loop forever
-        for (;;) {
-
             String word = words[i];
 
             String firstCharacter = String.valueOf(word.charAt(0));
             String lastCharacter = String.valueOf(word.charAt(word.length() - 1));
 
-            System.out.println("A random english word from a secret list has been chosen. This word is "
-                                       + word.length() + " characters long.");
+            System.out.println("You've chosen a word from this list (it's "
+                                       + word.length() + " characters long).");
 
             System.out.println("Guess the first letter of this word.");
             guessLetter(scan, firstCharacter);
