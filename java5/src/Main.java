@@ -58,7 +58,7 @@ public class Main {
     }
 
     public static int charToInt(char c) {
-        return c - 'a' + 1; // lua indexing. gross
+        return 26 - (c - 'a'); // lua indexing. gross
     }
 
     public static int getProduct(int[] values) {
