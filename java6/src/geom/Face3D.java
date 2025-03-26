@@ -4,6 +4,7 @@ import java.awt.Polygon;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
+import window.GraphicsRenderer;
 
 public class Face3D {
 
@@ -39,18 +40,19 @@ public class Face3D {
         int[] y = new int[points.length];
 
         for (int i = 0; i < points.length; i++) {
-//            Vector4d point = new Vector4d(points[i].x, points[i].y, Math.min(-2, points[i].z), 1);
-//
+//            Vector4d point = new Vector4d(points[i].x, points[i].y, points[i].z, 1);
 //            point.mul(transform);
-//
 //            point.div(point.w);
-
+//
             Vector3d point = new Vector3d(points[i]);
-
             transform.transformPosition(point);
 
-            x[i] = (int) point.x;
-            y[i] = (int) point.y;
+            System.out.print(point.z + " ");
+            point.div(point.z);
+
+            x[i] = (int) (point.x * GraphicsRenderer.GRAPHICS_SCALE);
+            y[i] = (int) (point.y * GraphicsRenderer.GRAPHICS_SCALE);
+//            System.out.print(point + " [" + x[i] + " " + y[i] + "] ");
         }
 
         return new Polygon(x, y, points.length);

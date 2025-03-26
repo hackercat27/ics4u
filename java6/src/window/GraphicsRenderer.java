@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -17,15 +18,26 @@ import org.joml.Vector3d;
 
 public class GraphicsRenderer {
 
+    public static final double GRAPHICS_SCALE = Integer.MAX_VALUE;
+
     Shape3D[] shapes;
 
     public GraphicsRenderer() {
 
+        double b = 0.5;
+
         shapes = new Shape3D[1];
         shapes[0] = new Shape3D(Color.MAGENTA, new Vector3d[]{
-                new Vector3d(1, 1, 0), new Vector3d(1, 0, 0), new Vector3d(0, 1, 0)
+                new Vector3d(b, b, b),
+                new Vector3d(-b, b, b),
+                new Vector3d(b, -b, b),
+                new Vector3d(-b, -b, b),
+                new Vector3d(b, b, -b),
+                new Vector3d(-b, b, -b),
+                new Vector3d(b, -b, -b),
+                new Vector3d(-b, -b, -b)
         }, new int[] {
-                0, 1, 2, Shape3D.INDEX_SEPARATOR
+                0, 1, 3, 2, Shape3D.INDEX_SEPARATOR
         });
 
     }
@@ -38,6 +50,8 @@ public class GraphicsRenderer {
         for (Shape3D shape : shapes) {
             shape.rotation.set(new Quaterniond());
             shape.rotation.rotateAxis(time, 1, 0, 0);
+            shape.rotation.rotateAxis(time / Math.PI, 0, 0, 1);
+            shape.position.set(0, 0, -5);
         }
     }
 
@@ -48,16 +62,23 @@ public class GraphicsRenderer {
         Graphics2D g2 = buffer.createGraphics();
         // translate graphics2d to centered origin rather than top left origin,
         // as well as invert y coordinate
-//        g2.translate(buffer.getWidth() / 2, buffer.getHeight() / 2);
-//        g2.scale(1, -1);
+
 
         double ratio = (double) buffer.getWidth() / buffer.getHeight();
         double scale = buffer.getHeight();
 
+        g2.scale(buffer.getWidth(), -buffer.getHeight());
+        g2.translate(0.5, -0.5);
+        g2.scale(1 / GRAPHICS_SCALE, 1 / GRAPHICS_SCALE);
+
+        double near = 0.01;
+        double far = 10000;
+
         Matrix4d projection = new Matrix4d()
-                .perspective(Math.toRadians(90), ratio, 0.1, 1000);
-        Matrix4d coordSpace = new Matrix4d();
-        coordSpace.scale(scale * ratio, scale, scale);
+                .perspective(Math.toRadians(90), ratio, near, far)
+                ;
+        Matrix4d camera = new Matrix4d();
+        camera.translate(Math.sin(time), 0, 0);
 
         for (Shape3D shape : shapes) {
 
@@ -66,11 +87,10 @@ public class GraphicsRenderer {
             transform.rotate(shape.rotation);
             transform.scale(shape.scale);
 
-            Matrix4d product = new Matrix4d()
+            Matrix4d mat = new Matrix4d()
                     .mul(projection)
-                    .mul(coordSpace)
-                    .mul(transform)
-                    ;
+                    .mul(camera)
+                    .mul(transform);
 
             List<Face3D> faces = new ArrayList<>(List.of(shape.getFaces()));
 
@@ -79,7 +99,16 @@ public class GraphicsRenderer {
             g2.setColor(Color.MAGENTA);
 
             for (Face3D face : faces) {
-                g2.fill(face.transform(product));
+                Polygon p = face.transform(mat);
+
+                for (int i = 0; i < p.npoints; i++) {
+                    System.out.printf("[%d, %d] ", p.xpoints[i], p.ypoints[i]);
+                }
+                System.out.print("\r");
+
+                AffineTransform af = g2.getTransform();
+                g2.fill(p);
+                g2.setTransform(af);
             }
         }
 
