@@ -15,7 +15,7 @@ public class GraphicsPanel extends JPanel {
     private double fpsMax = 500;
     private double fpsCurrent;
 
-    private double tpsMax = 30;
+    private double tpsMax = 120;
     private double tpsCurrent;
 
     private GraphicsRenderer graphicsRenderer;
@@ -51,9 +51,9 @@ public class GraphicsPanel extends JPanel {
 
                 double endTimeNanos = System.nanoTime();
 
-                double delta = endTimeNanos - startTimeNanos;
+                double frameDeltaNanos = endTimeNanos - startTimeNanos;
 
-                double extraTime = delta - maxTimeNanos;
+                double extraTime = maxTimeNanos - frameDeltaNanos;
 
                 if (extraTime > 0) {
                     Utils.sleep(extraTime);
@@ -67,7 +67,7 @@ public class GraphicsPanel extends JPanel {
         }, "rendering-scheduler");
 
         Thread ticker = new Thread(() -> {
-            double deltaTime = 0;
+            double deltaTimeSeconds = 0;
 
             // infinite loop, rely on system.exit
             for (;;) {
@@ -79,23 +79,24 @@ public class GraphicsPanel extends JPanel {
 
                 synchronized (rendererLock) {
                     if (graphicsRenderer != null) {
-                        graphicsRenderer.update(deltaTime);
+                        graphicsRenderer.update(deltaTimeSeconds);
                     }
                 }
 
                 double endTimeNanos = System.nanoTime();
 
-                double delta = endTimeNanos - startTimeNanos;
+                double tickDeltaNanos = endTimeNanos - startTimeNanos;
 
-                double extraTime = delta - maxTimeNanos;
+                double extraTimeNanos = maxTimeNanos - tickDeltaNanos;
 
-                if (extraTime > 0) {
-                    Utils.sleep(extraTime);
+                if (extraTimeNanos > 0) {
+                    Utils.sleep(extraTimeNanos);
                 }
 
+//                System.out.printf("%.6f\r", maxTimeNanos);
                 double realEndtimeNanos = System.nanoTime();
                 tpsCurrent = 1e9 / (realEndtimeNanos - startTimeNanos);
-                deltaTime = 1 / tpsCurrent;
+                deltaTimeSeconds = 1 / tpsCurrent;
 
             }
         }, "update-scheduler");

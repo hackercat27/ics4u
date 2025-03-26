@@ -45,9 +45,11 @@ public class Shape3D {
 
         List<Vector3d> faceBuilder = new ArrayList<>();
 
-        for (int index : indices) {
+        for (int i = 0; i < indices.length; i++) {
+            int index = indices[i];
+            boolean isLast = i >= indices.length - 1;
 
-            if (index == INDEX_SEPARATOR) {
+            if (index == INDEX_SEPARATOR || isLast) {
                 faces.add(new Face3D(faceBuilder.toArray(new Vector3d[0])));
                 faceBuilder.clear();
             }

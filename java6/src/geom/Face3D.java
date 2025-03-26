@@ -34,25 +34,28 @@ public class Face3D {
         return normal;
     }
 
+    public Vector3d getCentroid() {
+        Vector3d sum = new Vector3d();
+        for (Vector3d point : points) {
+            sum.add(point);
+        }
+        sum.div(points.length);
+        return sum;
+    }
+
     public Polygon transform(Matrix4d transform) {
 
         int[] x = new int[points.length];
         int[] y = new int[points.length];
 
         for (int i = 0; i < points.length; i++) {
-//            Vector4d point = new Vector4d(points[i].x, points[i].y, points[i].z, 1);
-//            point.mul(transform);
-//            point.div(point.w);
-//
             Vector3d point = new Vector3d(points[i]);
             transform.transformPosition(point);
-
-            System.out.print(point.z + " ");
             point.div(point.z);
 
-            x[i] = (int) (point.x * GraphicsRenderer.GRAPHICS_SCALE);
-            y[i] = (int) (point.y * GraphicsRenderer.GRAPHICS_SCALE);
-//            System.out.print(point + " [" + x[i] + " " + y[i] + "] ");
+            // see GraphicsRenderer.render for why we need to multiply by INT_SCALE here
+            x[i] = (int) (point.x * GraphicsRenderer.INT_SCALE);
+            y[i] = (int) (point.y * GraphicsRenderer.INT_SCALE);
         }
 
         return new Polygon(x, y, points.length);
