@@ -126,7 +126,7 @@ public class GraphicsPanel extends JPanel {
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(640, 480);
+        return new Dimension(854, 480);
     }
 
     public void setGraphicsRenderer(GraphicsRenderer renderer) {

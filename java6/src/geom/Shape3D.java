@@ -10,6 +10,9 @@ public class Shape3D {
 
     public static final int INDEX_SEPARATOR = -1;
 
+    public static int gid;
+    public int id = gid++;
+
     private Vector3d[] points;
     private Color color;
     private int[] indices;
@@ -49,16 +52,29 @@ public class Shape3D {
             int index = indices[i];
             boolean isLast = i >= indices.length - 1;
 
+            if (index >= 0 && index < points.length) {
+                faceBuilder.add(points[index]);
+            }
             if (index == INDEX_SEPARATOR || isLast) {
                 faces.add(new Face3D(faceBuilder.toArray(new Vector3d[0])));
                 faceBuilder.clear();
             }
-            else {
-                faceBuilder.add(points[index]);
-            }
+
 
         }
 
         return faces.toArray(new Face3D[0]);
+    }
+
+    public Vector3d getPosition() {
+        return position;
+    }
+
+    public Quaterniond getRotation() {
+        return rotation;
+    }
+
+    public double getScale() {
+        return scale;
     }
 }

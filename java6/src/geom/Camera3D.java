@@ -7,7 +7,7 @@ public class Camera3D {
 
     public Vector3d position = new Vector3d();
     public Quaterniond rotation = new Quaterniond();
-    public double fov = Math.toRadians(80);
+    public double fov = Math.toRadians(60);
 
     private Vector3d lastPosition = new Vector3d();
     private Quaterniond lastRotation = new Quaterniond();
@@ -30,8 +30,6 @@ public class Camera3D {
         lastFOV = fov;
 
         time += deltaTime;
-
-        position.set(Math.sin(time) * 4, 0, -8 + Math.cos(time) * 4);
     }
 
     public void setAngles(double yaw, double pitch) {
