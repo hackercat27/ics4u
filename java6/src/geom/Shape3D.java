@@ -1,19 +1,14 @@
 package geom;
 
 import java.awt.Color;
-import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.List;
-import org.joml.Matrix4d;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
 public class Shape3D {
 
     public static final int INDEX_SEPARATOR = -1;
-
-    public static int gid;
-    public int id = gid++;
 
     private Vector3d[] points;
     private Color color;

@@ -53,7 +53,6 @@ public class ShapeGenerator {
         });
     }
 
-    // Generate an Octahedron
     public static Shape3D octahedron(Color color) {
         Vector3d[] points = new Vector3d[]{
                 new Vector3d(1, 0, 0),
@@ -189,11 +188,13 @@ public class ShapeGenerator {
             double direction = face.getNormal().dot(face.getCentroid());
             boolean flip = direction < 0;
 
-            for (int i = flip? 2 : 0; flip? (i >= 0) : (i < 3); i += flip? -1 : 1) {
-
+            for (int i = 0; i < 3; i++) {
                 Vector3d centroid = centroids.get(i);
                 points.add(centroid);
                 indices.add(points.indexOf(centroid));
+            }
+            if (flip) {
+                indices = indices.reversed();
             }
             indices.add(Shape3D.INDEX_SEPARATOR);
         }

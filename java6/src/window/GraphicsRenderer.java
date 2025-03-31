@@ -90,8 +90,6 @@ public class GraphicsRenderer {
 
         camera = new Camera3D();
 
-
-
         tet.scale = 2;
         oct.scale = 2;
 
@@ -244,7 +242,6 @@ public class GraphicsRenderer {
             g2.setColor(lineColor);
             g2.setStroke(new BasicStroke((float) (1.5 * INT_SCALE / scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
-
             Matrix4d mat = new Matrix4d()
                     .mul(perspectiveTransform)
                     .mul(cameraTransform);
@@ -265,10 +262,7 @@ public class GraphicsRenderer {
 
         for (Shape3D shape : shapes) {
 
-            Matrix4d objectTransform = new Matrix4d();
-            objectTransform.translate(shape.position);
-            objectTransform.rotate(shape.rotation);
-            objectTransform.scale(shape.scale);
+            Matrix4d objectTransform = Utils.getTransform(shape.position, shape.rotation, shape.scale);
 
             Matrix4d mat = new Matrix4d()
                     .mul(perspectiveTransform)

@@ -1,6 +1,8 @@
 package util;
 
 import java.awt.Color;
+import org.joml.Matrix4d;
+import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
 
@@ -48,4 +50,16 @@ public class Utils {
                 (float) Math.min(1, Math.abs(vec.z)),
                 (float) Math.min(1, Math.abs(vec.w)));
     }
+
+    public static Matrix4d getTransform(Vector3d position, Quaterniond rotation, double scale) {
+        return new Matrix4d()
+                .translate(position)
+                .rotate(rotation)
+                .scale(scale);
+    }
+
+    public static Matrix4d getCameraTransform() {
+
+    }
+
 }

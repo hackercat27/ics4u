@@ -1,7 +1,6 @@
 package geom;
 
 import java.awt.Polygon;
-import java.awt.Shape;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
 import window.GraphicsRenderer;

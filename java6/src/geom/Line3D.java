@@ -1,7 +1,5 @@
 package geom;
 
-import java.awt.Polygon;
-import java.awt.Shape;
 import java.awt.geom.Line2D;
 import org.joml.Matrix4d;
 import org.joml.Vector3d;
