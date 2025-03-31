@@ -2,6 +2,7 @@ package window;
 
 import geom.Camera3D;
 import geom.Face3D;
+import geom.Line3D;
 import geom.Shape3D;
 import geom.ShapeGenerator;
 import java.awt.BasicStroke;
@@ -11,7 +12,9 @@ import java.awt.Polygon;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,6 +40,7 @@ public class GraphicsRenderer {
 
     public static final double INT_SCALE = Integer.MAX_VALUE;
 
+    final List<Line3D> lines = new ArrayList<>();
     final List<Shape3D> shapes = new ArrayList<>();
     Camera3D camera;
 
@@ -61,6 +65,8 @@ public class GraphicsRenderer {
 
     int alpha = 0xB0 << 24;
     int bits = 0xFFFFFF;
+
+    private Color lineColor = new Color(0xFF585256);
 
     Shape3D tet = (ShapeGenerator.tetrahedron(
             new Color(new Color(0xa83dfd).getRGB() & bits | alpha, true)));
@@ -109,19 +115,11 @@ public class GraphicsRenderer {
             positions(oct, "java6/positions_oct.txt");
             positions(tet, "java6/positions_tetra.txt");
 
-//            for (int i = 0; i < shapes.size(); i++) {
-//                Shape3D shape = shapes.get(i);
-//
-//                double d = Math.TAU * ((double) i / shapes.size()) + time;
-//
-//                shape.rotation.set(new Quaterniond());
-//                shape.rotation.rotateAxis(4 * time / 3, 1, 0, 0);
-//                shape.rotation.rotateAxis(4 * time / 2, 0, 0, 1);
-//                shape.rotation.rotateAxis(-1, 1, 0, 0);
-//                shape.position.set(Math.sin(d) * 4, Math.sin(d * 1.1) * 4, -20 + Math.cos(d) * 4);
-//            }
-
             camera.update(deltaTime);
+        }
+
+        synchronized (lines) {
+            positionsLines("java6/positions_lines.txt");
         }
     }
 
@@ -159,16 +157,48 @@ public class GraphicsRenderer {
         }
     }
 
+    private void positionsLines(String filename) {
+        InputStream fis;
+        try {
+            fis = new FileInputStream(filename);
+        }
+        catch (FileNotFoundException e) {
+            fis = null;
+        }
+
+        if (fis != null) {
+            lines.clear();
+            List<Double> values = new ArrayList<>();
+            forEach(fis, ",", num -> {
+                try {
+                    values.add(Double.parseDouble(num));
+                }
+                catch (NumberFormatException e) {
+                    values.add(0d);
+                }
+            });
+
+            try {
+                for (int i = 0; ; i += 6) {
+                    lines.add(new Line3D(new Vector3d(values.get(0 + i), values.get(1 + i), values.get(2 + i)),
+                                         new Vector3d(values.get(3 + i), values.get(4 + i), values.get(5 + i))
+                    ));
+                }
+            }
+            catch (IndexOutOfBoundsException ignored) {}
+        }
+    }
+
     public void render(BufferedImage buffer, double interp) {
 
         Graphics2D g2 = buffer.createGraphics();
 
-//        if (texture != null) {
-//            double scale = (double) buffer.getHeight() / texture.getHeight();
-//            int x = (int) (buffer.getWidth() / 2d - (scale * texture.getWidth() / 2));
-//            int y = 0;
-//            g2.drawImage(texture, x, y, (int) (texture.getWidth() * scale), (int) (texture.getHeight() * scale), null);
-//        }
+        if (texture != null) {
+            double scale = (double) buffer.getHeight() / texture.getHeight();
+            int x = (int) (buffer.getWidth() / 2d - (scale * texture.getWidth() / 2));
+            int y = 0;
+            g2.drawImage(texture, x, y, (int) (texture.getWidth() * scale), (int) (texture.getHeight() * scale), null);
+        }
 
         double ratio = (double) buffer.getWidth() / buffer.getHeight();
         double scale = buffer.getHeight();
@@ -179,11 +209,8 @@ public class GraphicsRenderer {
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setPaint(new RadialGradientPaint(0, 0, 0.8f, new float[] {0, 0.4f, 1}, new Color[] {
-                new Color(0xf1edea),
-                new Color(0xD7D0CD),
-                new Color(0x9F948C)}));
-        g2.fillRect((int) -ratio, -1, (int) (ratio * 2), 2);
+        g2.setColor(new Color(0xf1edea));
+//        g2.fillRect((int) -ratio, -1, (int) (ratio * 2), 2);
 
         // the java graphics api expects integer values, but NDC expects to use
         // floating point values from 0 to 1 - so we need to essentially use
@@ -200,9 +227,42 @@ public class GraphicsRenderer {
         cameraTransform.rotate(camera.getRotation(interp));
         cameraTransform.translate(camera.getPosition(interp));
 
-        List<Shape3D> shapes = new ArrayList<>(this.shapes);
+        List<Shape3D> shapes;
+        synchronized (this.shapes) {
+            shapes = new ArrayList<>(this.shapes);
+        }
+
+        List<Line3D> lines;
+        synchronized (this.lines) {
+            lines = new ArrayList<>(this.lines);
+        }
 
         shapes.sort(Comparator.comparingDouble(o -> o.getPosition().z));
+
+        for (Line3D line : lines) {
+
+            g2.setColor(lineColor);
+            g2.setStroke(new BasicStroke((float) (1.5 * INT_SCALE / scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+
+
+            Matrix4d mat = new Matrix4d()
+                    .mul(perspectiveTransform)
+                    .mul(cameraTransform);
+
+            Line2D l = line.transform(mat);
+
+            g2.draw(l);
+
+        }
+
+        g2.scale(INT_SCALE, INT_SCALE);
+        g2.setPaint(new RadialGradientPaint(0, 0, 0.8f, new float[] {0, 0.2f, 1}, new Color[] {
+                new Color(0x00FFFFFF, true),
+                new Color(0xA0D7D0CD, true),
+                new Color(0x9F948C)}));
+        g2.fillRect((int) -ratio, -1, (int) (ratio * 2), 2);
+        g2.scale(1 / INT_SCALE, 1 / INT_SCALE);
+
         for (Shape3D shape : shapes) {
 
             Matrix4d objectTransform = new Matrix4d();
@@ -245,7 +305,7 @@ public class GraphicsRenderer {
 
                 AffineTransform af = g2.getTransform();
                 g2.fill(p);
-                g2.setColor(new Color(0xFF585256));
+                g2.setColor(lineColor);
                 g2.setStroke(new BasicStroke((float) (1.5 * INT_SCALE / scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                 g2.draw(p);
                 g2.setTransform(af);
