@@ -1,6 +1,11 @@
 package util;
 
 import java.awt.Color;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.Scanner;
+import java.util.function.Consumer;
 import org.joml.Matrix4d;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
@@ -58,8 +63,28 @@ public class Utils {
                 .scale(scale);
     }
 
-    public static Matrix4d getCameraTransform() {
+    public static Matrix4d getCameraTransform(Vector3d position, Quaterniond rotation, double scale) {
+        return new Matrix4d()
+                .scale(scale)
+                .rotate(rotation)
+                .translate(position);
+    }
 
+
+    public static void forEach(InputStream in, String separator, Consumer<String> sectionConsumer) {
+        forEach(new InputStreamReader(in), separator, sectionConsumer);
+    }
+
+    public static void forEach(Reader r, String separator, Consumer<String> sectionConsumer) {
+        if (r == null) {
+            return;
+        }
+        Scanner scan = new Scanner(r);
+        scan.useDelimiter(separator);
+
+        while (scan.hasNext()) {
+            sectionConsumer.accept(scan.next());
+        }
     }
 
 }

@@ -4,15 +4,13 @@ import geom.Camera3D;
 import geom.Face3D;
 import geom.Line3D;
 import geom.Shape3D;
-import geom.ShapeGenerator;
+import geom.Shape3DFactory;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
@@ -20,14 +18,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Scanner;
-import java.util.function.Consumer;
 import javax.imageio.ImageIO;
 import org.joml.Matrix4d;
 import org.joml.Quaterniond;
@@ -40,44 +34,28 @@ public class GraphicsRenderer {
 
     public static final double INT_SCALE = Integer.MAX_VALUE;
 
-    final List<Line3D> lines = new ArrayList<>();
-    final List<Shape3D> shapes = new ArrayList<>();
-    Camera3D camera;
+    private final List<Line3D> lines = new ArrayList<>();
+    private final List<Shape3D> shapes = new ArrayList<>();
+    private Camera3D camera;
 
-    BufferedImage texture;
+    private BufferedImage texture;
 
+    private static final int SHAPE_ALPHA = 0xB0 << 24;
+    private static final int COLOR_BITS = 0xFFFFFF;
 
-    public static void forEach(InputStream in, String separator, Consumer<String> sectionConsumer) {
-        forEach(new InputStreamReader(in), separator, sectionConsumer);
-    }
+    private static final Color lineColor = new Color(0xFF585256);
 
-    public static void forEach(Reader r, String separator, Consumer<String> sectionConsumer) {
-        if (r == null) {
-            return;
-        }
-        Scanner scan = new Scanner(r);
-        scan.useDelimiter(separator);
+    private static final Color colorTetrahedron  = new Color(new Color(0xa83dfd).getRGB() & COLOR_BITS | SHAPE_ALPHA, true);
+    private static final Color colorOctahedron   = new Color(new Color(0x8d56fc).getRGB() & COLOR_BITS | SHAPE_ALPHA, true);
+    private static final Color colorIcosahedron  = new Color(new Color(0x15ECBA).getRGB() & COLOR_BITS | SHAPE_ALPHA, true);
+    private static final Color colorCube         = new Color(new Color(0xfd219d).getRGB() & COLOR_BITS | SHAPE_ALPHA, true);
+    private static final Color colorDodecahedron = new Color(new Color(0xFF4710).getRGB() & COLOR_BITS | SHAPE_ALPHA, true);
 
-        while (scan.hasNext()) {
-            sectionConsumer.accept(scan.next());
-        }
-    }
-
-    int alpha = 0xB0 << 24;
-    int bits = 0xFFFFFF;
-
-    private Color lineColor = new Color(0xFF585256);
-
-    Shape3D tet = (ShapeGenerator.tetrahedron(
-            new Color(new Color(0xa83dfd).getRGB() & bits | alpha, true)));
-    Shape3D oct = (ShapeGenerator.octahedron(
-            new Color(new Color(0x8d56fc).getRGB() & bits | alpha, true)));
-    Shape3D ico = (ShapeGenerator.icosahedron(
-            new Color(new Color(0x15ECBA).getRGB() & bits | alpha, true)));
-    Shape3D cub = (ShapeGenerator.cube(
-            new Color(new Color(0xfd219d).getRGB() & bits | alpha, true)));
-    Shape3D dod = (ShapeGenerator.dodecahedron(
-            new Color(new Color(0xFF4710).getRGB() & bits | alpha, true)));
+    private static final Shape3D tetrahedron  = Shape3DFactory.tetrahedron(colorTetrahedron);
+    private static final Shape3D octahedron   = Shape3DFactory.octahedron(colorOctahedron);
+    private static final Shape3D icosahedron  = Shape3DFactory.icosahedron(colorIcosahedron);
+    private static final Shape3D cube         = Shape3DFactory.cube(colorCube);
+    private static final Shape3D dodecahedron = Shape3DFactory.dodecahedron(colorDodecahedron);
 
     public GraphicsRenderer() {
 
@@ -90,14 +68,14 @@ public class GraphicsRenderer {
 
         camera = new Camera3D();
 
-        tet.scale = 2;
-        oct.scale = 2;
+        tetrahedron.scale = 2;
+        octahedron.scale = 2;
 
-        shapes.add(tet);
-        shapes.add(oct);
-        shapes.add(ico);
-        shapes.add(cub);
-        shapes.add(dod);
+        shapes.add(tetrahedron);
+        shapes.add(octahedron);
+        shapes.add(icosahedron);
+        shapes.add(cube);
+        shapes.add(dodecahedron);
     }
 
     double time = 0;
@@ -107,11 +85,11 @@ public class GraphicsRenderer {
 
         synchronized (shapes) {
 
-            positions(cub, "java6/positions_cube.txt");
-            positions(ico, "java6/positions_ico.txt");
-            positions(dod, "java6/positions_dodec.txt");
-            positions(oct, "java6/positions_oct.txt");
-            positions(tet, "java6/positions_tetra.txt");
+            positions(cube, "java6/positions_cube.txt");
+            positions(icosahedron, "java6/positions_ico.txt");
+            positions(dodecahedron, "java6/positions_dodec.txt");
+            positions(octahedron, "java6/positions_oct.txt");
+            positions(tetrahedron, "java6/positions_tetra.txt");
 
             camera.update(deltaTime);
         }
@@ -133,7 +111,7 @@ public class GraphicsRenderer {
 
         if (fis != null) {
             List<Double> values = new ArrayList<>();
-            forEach(fis, ",", num -> {
+            Utils.forEach(fis, ",", num -> {
                 try {
                     values.add(Double.parseDouble(num));
                 }
@@ -167,7 +145,7 @@ public class GraphicsRenderer {
         if (fis != null) {
             lines.clear();
             List<Double> values = new ArrayList<>();
-            forEach(fis, ",", num -> {
+            Utils.forEach(fis, ",", num -> {
                 try {
                     values.add(Double.parseDouble(num));
                 }
@@ -191,12 +169,12 @@ public class GraphicsRenderer {
 
         Graphics2D g2 = buffer.createGraphics();
 
-        if (texture != null) {
-            double scale = (double) buffer.getHeight() / texture.getHeight();
-            int x = (int) (buffer.getWidth() / 2d - (scale * texture.getWidth() / 2));
-            int y = 0;
-            g2.drawImage(texture, x, y, (int) (texture.getWidth() * scale), (int) (texture.getHeight() * scale), null);
-        }
+//        if (texture != null) {
+//            double scale = (double) buffer.getHeight() / texture.getHeight();
+//            int x = (int) (buffer.getWidth() / 2d - (scale * texture.getWidth() / 2));
+//            int y = 0;
+//            g2.drawImage(texture, x, y, (int) (texture.getWidth() * scale), (int) (texture.getHeight() * scale), null);
+//        }
 
         double ratio = (double) buffer.getWidth() / buffer.getHeight();
         double scale = buffer.getHeight();
@@ -208,7 +186,7 @@ public class GraphicsRenderer {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         g2.setColor(new Color(0xf1edea));
-//        g2.fillRect((int) -ratio, -1, (int) (ratio * 2), 2);
+        g2.fillRect((int) -ratio, -1, (int) (ratio * 2), 2);
 
         // the java graphics api expects integer values, but NDC expects to use
         // floating point values from 0 to 1 - so we need to essentially use
@@ -221,9 +199,7 @@ public class GraphicsRenderer {
 
         Matrix4d perspectiveTransform = new Matrix4d()
                 .perspective(camera.getFOV(interp), ratio, near, far);
-        Matrix4d cameraTransform = new Matrix4d();
-        cameraTransform.rotate(camera.getRotation(interp));
-        cameraTransform.translate(camera.getPosition(interp));
+        Matrix4d cameraTransform = Utils.getCameraTransform(camera.getPosition(interp), camera.getRotation(interp), 1);
 
         List<Shape3D> shapes;
         synchronized (this.shapes) {
@@ -238,7 +214,6 @@ public class GraphicsRenderer {
         shapes.sort(Comparator.comparingDouble(o -> o.getPosition().z));
 
         for (Line3D line : lines) {
-
             g2.setColor(lineColor);
             g2.setStroke(new BasicStroke((float) (1.5 * INT_SCALE / scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
@@ -247,15 +222,13 @@ public class GraphicsRenderer {
                     .mul(cameraTransform);
 
             Line2D l = line.transform(mat);
-
             g2.draw(l);
-
         }
 
         g2.scale(INT_SCALE, INT_SCALE);
         g2.setPaint(new RadialGradientPaint(0, 0, 0.8f, new float[] {0, 0.2f, 1}, new Color[] {
                 new Color(0x00FFFFFF, true),
-                new Color(0xA0D7D0CD, true),
+                new Color(0xF2D7D0CD, true),
                 new Color(0x9F948C)}));
         g2.fillRect((int) -ratio, -1, (int) (ratio * 2), 2);
         g2.scale(1 / INT_SCALE, 1 / INT_SCALE);
@@ -276,7 +249,6 @@ public class GraphicsRenderer {
             List<Face3D> faces = new ArrayList<>(List.of(shape.getFaces()));
 
             faces.sort(Comparator.comparingDouble(o -> -mat2.transformPosition(o.getCentroid()).length()));
-
 
             for (Face3D face : faces) {
                 Polygon p = face.transform(mat);
