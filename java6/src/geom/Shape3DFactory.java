@@ -4,12 +4,11 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-public class ShapeGenerator {
+public class Shape3DFactory {
 
-    private ShapeGenerator() {}
+    private Shape3DFactory() {}
 
     public static Shape3D tetrahedron(Color color) {
 
