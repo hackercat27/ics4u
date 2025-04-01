@@ -13,7 +13,7 @@ public abstract class Runner extends Thread {
     }
 
     @Override
-    public void run() {
+    public final void run() {
 
         // infinite loop, rely on system.exit
         for (;;) {

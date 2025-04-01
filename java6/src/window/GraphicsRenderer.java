@@ -68,9 +68,6 @@ public class GraphicsRenderer {
 
         camera = new Camera3D();
 
-        tetrahedron.scale = 2;
-        octahedron.scale = 2;
-
         shapes.add(tetrahedron);
         shapes.add(octahedron);
         shapes.add(icosahedron);
@@ -78,10 +75,7 @@ public class GraphicsRenderer {
         shapes.add(dodecahedron);
     }
 
-    double time = 0;
-
     public void update(double deltaTime) {
-        time += deltaTime;
 
         synchronized (shapes) {
 
@@ -154,14 +148,11 @@ public class GraphicsRenderer {
                 }
             });
 
-            try {
-                for (int i = 0; ; i += 6) {
-                    lines.add(new Line3D(new Vector3d(values.get(0 + i), values.get(1 + i), values.get(2 + i)),
-                                         new Vector3d(values.get(3 + i), values.get(4 + i), values.get(5 + i))
-                    ));
-                }
+            for (int i = 0; i + 5 < values.size(); i += 6) {
+                lines.add(new Line3D(new Vector3d(values.get(i), values.get(i + 1), values.get(i + 2)),
+                                     new Vector3d(values.get(i + 3), values.get(i + 4), values.get(i + 5))
+                ));
             }
-            catch (IndexOutOfBoundsException ignored) {}
         }
     }
 

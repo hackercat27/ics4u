@@ -70,7 +70,6 @@ public class Utils {
                 .translate(position);
     }
 
-
     public static void forEach(InputStream in, String separator, Consumer<String> sectionConsumer) {
         forEach(new InputStreamReader(in), separator, sectionConsumer);
     }
