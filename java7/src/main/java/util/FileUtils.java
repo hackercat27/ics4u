@@ -1,14 +1,26 @@
 package util;
 
+import geom.Shape3D;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import org.joml.Vector2d;
+import org.joml.Vector3d;
+import org.joml.Vector3i;
 
 public class FileUtils {
 
@@ -48,6 +60,10 @@ public class FileUtils {
     }
 
     public static String simplifyPath(String path) {
+
+        if (path == null) {
+            return null;
+        }
 
         boolean containsBadSeparators = path.matches(".*\\\\\\\\.*") // contains escaped backslash
                 || path.matches(".*//.*") // contains double slashes
@@ -117,6 +133,10 @@ public class FileUtils {
     }
 
     public static InputStream getInputStream(String path) {
+        if (path == null) {
+            return null;
+        }
+
         /*
          * try to find classpath file first,
          * and if it doesn't exist, then try to find a file on disk.
@@ -138,6 +158,131 @@ public class FileUtils {
             LOGGER.log(Level.WARNING, "Couldn't find file '%s'", simplePath);
         }
         return in;
+    }
+
+    public static BufferedImage getImage(InputStream in) {
+        try {
+            if (in == null) {
+                throw new IOException();
+            }
+            return ImageIO.read(in);
+        }
+        catch (IOException e) {
+            BufferedImage ret = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = ret.createGraphics();
+            g2.setColor(Color.MAGENTA);
+            g2.fillRect(0, 0,
+                        ret.getWidth(), ret.getHeight());
+
+            g2.setColor(Color.BLACK);
+            g2.fillRect(0, 0,
+                        ret.getWidth() / 2, ret.getHeight() / 2);
+            g2.fillRect(ret.getWidth() / 2, ret.getHeight() / 2,
+                        ret.getWidth() / 2, ret.getHeight() / 2);
+            g2.dispose();
+            return ret;
+        }
+    }
+
+    public static Shape3D getShape(InputStream in) {
+        if (in == null) {
+            return null;
+        }
+
+        List<Vector3d> vertices = new ArrayList<>();
+        List<Vector2d> uvs = new ArrayList<>();
+        List<Vector3d> normals = new ArrayList<>();
+
+        List<Vector3i[]> faces = new ArrayList<>();
+
+        forEach(in, "\n", line -> {
+            if (line.startsWith("#")) {
+                // comment line, ignore
+                return;
+            }
+
+            else if (line.startsWith("v ")) {
+                String[] args = line.split("\\s+");
+
+                vertices.add(new Vector3d(
+                        Double.parseDouble(args[1]),
+                        Double.parseDouble(args[2]),
+                        Double.parseDouble(args[3])));
+            }
+
+            else if (line.startsWith("vt ")) {
+                String[] args = line.split("\\s+");
+
+                uvs.add(new Vector2d(
+                            Double.parseDouble(args[1]),
+                        1 - Double.parseDouble(args[2])));
+            }
+
+            else if (line.startsWith("vn ")) {
+                String[] args = line.split("\\s+");
+
+                normals.add(new Vector3d(
+                        Double.parseDouble(args[1]),
+                        Double.parseDouble(args[2]),
+                        Double.parseDouble(args[3])).normalize());
+            }
+
+            else if (line.startsWith("f ")) {
+                String[] args = line.split("\\s+");
+
+                Vector3i[] face = new Vector3i[args.length - 1];
+
+                for (int i = 0; i < face.length; i++) {
+
+                    String[] indices = args[i + 1].split("/");
+
+                    Vector3i vertex = new Vector3i();
+
+                    for (int j = 0; j < indices.length; j++) {
+                        String index = indices[j];
+                        vertex.setComponent(j, index.isBlank()? Integer.MIN_VALUE : Integer.parseInt(index) - 1);
+                    }
+
+                    face[i] = vertex;
+                }
+                faces.add(face);
+            }
+
+        });
+
+        List<Vector3d> finalVertices = new ArrayList<>();
+        List<Vector2d> finalUvs = new ArrayList<>();
+        List<Vector3d> finalNormals = new ArrayList<>();
+        List<Integer> finalIndices = new ArrayList<>();
+
+        finalUvs.add(new Vector2d(0, 0));
+        finalUvs.add(new Vector2d(0, 1));
+        finalUvs.add(new Vector2d(1, 0));
+
+        for (Vector3i[] face : faces) {
+            for (int i = 0; i < face.length; i++) {
+                Vector3i faceVertex = face[i];
+                int positionIndex = faceVertex.x;
+                int uvIndex = faceVertex.y;
+                int normalIndex = faceVertex.z;
+
+                Vector3d position = vertices.get(positionIndex);
+                Vector2d uv = uvIndex < 0? finalUvs.get(i) : uvs.get(uvIndex);
+                Vector3d normal = normals.get(normalIndex);
+
+                finalVertices.add(position);
+                finalUvs.add(uv);
+                finalNormals.add(normal);
+                finalIndices.add(finalVertices.indexOf(position));
+            }
+            finalIndices.add(Shape3D.INDEX_SEPARATOR);
+        }
+
+        return new Shape3D(Color.MAGENTA,
+                           finalVertices.toArray(new Vector3d[0]),
+                           finalUvs.toArray(new Vector2d[0]),
+//                           finalNormals.toArray(new Vector3d[0]),
+                           finalIndices.stream().mapToInt(Integer::intValue).toArray());
     }
 
 }

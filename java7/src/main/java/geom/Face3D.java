@@ -1,16 +1,20 @@
 package geom;
 
 import java.awt.Polygon;
+import java.awt.geom.AffineTransform;
 import org.joml.Matrix4d;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import window.GraphicsRenderer;
 
 public class Face3D {
 
     private Vector3d[] points;
+    private Vector2d[] uvs;
 
-    public Face3D(Vector3d[] points) {
+    public Face3D(Vector3d[] points, Vector2d[] uvs) {
         this.points = points;
+        this.uvs = uvs;
 
         if (points.length < 3) {
             System.out.println("Warning: created degenerate 3d face with less than 3 vertices!");
@@ -42,7 +46,7 @@ public class Face3D {
         return sum;
     }
 
-    public Polygon transform(Matrix4d transform) {
+    public Polygon transform(Matrix4d transform, AffineTransform ret) {
 
         int[] x = new int[points.length];
         int[] y = new int[points.length];
