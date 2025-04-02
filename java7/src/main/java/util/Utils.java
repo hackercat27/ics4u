@@ -70,20 +70,4 @@ public class Utils {
                 .translate(position);
     }
 
-    public static void forEach(InputStream in, String separator, Consumer<String> sectionConsumer) {
-        forEach(new InputStreamReader(in), separator, sectionConsumer);
-    }
-
-    public static void forEach(Reader r, String separator, Consumer<String> sectionConsumer) {
-        if (r == null) {
-            return;
-        }
-        Scanner scan = new Scanner(r);
-        scan.useDelimiter(separator);
-
-        while (scan.hasNext()) {
-            sectionConsumer.accept(scan.next());
-        }
-    }
-
 }
