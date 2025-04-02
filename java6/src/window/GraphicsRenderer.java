@@ -43,7 +43,10 @@ public class GraphicsRenderer {
     private static final int SHAPE_ALPHA = 0xB0 << 24;
     private static final int COLOR_BITS = 0xFFFFFF;
 
-    private static final Color lineColor = new Color(0xFF585256);
+    private static final Color colorBackground = new Color(0xf1edea);
+    private static final Color colorVignette = new Color(0x9F948C);
+
+    private static final Color colorLine = new Color(0xFF585256);
 
     private static final Color colorTetrahedron  = new Color(new Color(0xa83dfd).getRGB() & COLOR_BITS | SHAPE_ALPHA, true);
     private static final Color colorOctahedron   = new Color(new Color(0x8d56fc).getRGB() & COLOR_BITS | SHAPE_ALPHA, true);
@@ -176,7 +179,8 @@ public class GraphicsRenderer {
 
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setColor(new Color(0xf1edea));
+        g2.setColor(colorBackground);
+        // this over paints but i don't care anymore
         g2.fillRect((int) -ratio, -1, (int) (ratio * 2), 2);
 
         // the java graphics api expects integer values, but NDC expects to use
@@ -186,7 +190,7 @@ public class GraphicsRenderer {
         g2.scale(1 / INT_SCALE, 1 / INT_SCALE);
 
         double near = 0.01;
-        double far = 10000;
+        double far = 1000;
 
         Matrix4d perspectiveTransform = new Matrix4d()
                 .perspective(camera.getFOV(interp), ratio, near, far);
@@ -205,7 +209,7 @@ public class GraphicsRenderer {
         shapes.sort(Comparator.comparingDouble(o -> o.getPosition().z));
 
         for (Line3D line : lines) {
-            g2.setColor(lineColor);
+            g2.setColor(colorLine);
             g2.setStroke(new BasicStroke((float) (1.5 * INT_SCALE / scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 
             Matrix4d mat = new Matrix4d()
@@ -217,10 +221,11 @@ public class GraphicsRenderer {
         }
 
         g2.scale(INT_SCALE, INT_SCALE);
-        g2.setPaint(new RadialGradientPaint(0, 0, 0.8f, new float[] {0, 0.2f, 1}, new Color[] {
-                new Color(0x00FFFFFF, true),
-                new Color(0xF2D7D0CD, true),
-                new Color(0x9F948C)}));
+        g2.setPaint(new RadialGradientPaint(0, 0, 0.7f, new float[] {0, 1}, new Color[] {
+                new Color(colorBackground.getRGB() & COLOR_BITS | (0x40 << 24), true),
+                colorVignette}));
+        g2.fillRect((int) -ratio, -1, (int) (ratio * 2), 2);
+        g2.fillRect((int) -ratio, -1, (int) (ratio * 2), 2);
         g2.fillRect((int) -ratio, -1, (int) (ratio * 2), 2);
         g2.scale(1 / INT_SCALE, 1 / INT_SCALE);
 
@@ -246,7 +251,9 @@ public class GraphicsRenderer {
 
                 Vector3d rotNormal = mat2.transformDirection(face.getNormal()).normalize();
 
-                double light = Math.abs(rotNormal.dot(new Vector3d(1, 1, 2).normalize()));
+                Vector3d toLightVector = new Vector3d(1, 1, 2).normalize();
+
+                double light = Math.abs(rotNormal.dot(toLightVector));
 
                 double min = 0.6;
 
@@ -262,7 +269,7 @@ public class GraphicsRenderer {
 
                 AffineTransform af = g2.getTransform();
                 g2.fill(p);
-                g2.setColor(lineColor);
+                g2.setColor(colorLine);
                 g2.setStroke(new BasicStroke((float) (1.5 * INT_SCALE / scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                 g2.draw(p);
                 g2.setTransform(af);
