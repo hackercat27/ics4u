@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) {
 
         GraphicsPanel panel = new GraphicsPanel();
-        JFrame frame = new JFrame("java6 art");
+        JFrame frame = new JFrame("java7 2d arrays");
 
         panel.setGraphicsRenderer(new GraphicsRenderer());
 
