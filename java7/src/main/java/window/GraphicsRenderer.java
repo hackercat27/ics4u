@@ -1,32 +1,11 @@
 package window;
 
 import geom.Camera3D;
-import geom.Face3D;
-import geom.Line3D;
-import geom.Shape3D;
-import geom.Shape3DFactory;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
-import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import javax.imageio.ImageIO;
 import org.joml.Matrix4d;
-import org.joml.Quaterniond;
-import org.joml.Vector3d;
-import org.joml.Vector4d;
 import util.Utils;
 
 
