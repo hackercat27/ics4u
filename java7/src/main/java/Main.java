@@ -1,4 +1,5 @@
 import javax.swing.JFrame;
+import util.FileUtils;
 import window.GraphicsPanel;
 import window.GraphicsRenderer;
 
