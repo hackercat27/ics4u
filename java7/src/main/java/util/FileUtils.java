@@ -4,7 +4,6 @@ import geom.Shape3D;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -255,9 +254,6 @@ public class FileUtils {
         List<Vector3d> finalNormals = new ArrayList<>();
         List<Integer> finalIndices = new ArrayList<>();
 
-        finalUvs.add(new Vector2d(0, 0));
-        finalUvs.add(new Vector2d(0, 1));
-        finalUvs.add(new Vector2d(1, 0));
 
         for (Vector3i[] face : faces) {
             for (int i = 0; i < face.length; i++) {
@@ -266,17 +262,22 @@ public class FileUtils {
                 int uvIndex = faceVertex.y;
                 int normalIndex = faceVertex.z;
 
+                boolean normalOutOfRange = normalIndex < 0 || normalIndex >= normals.size();
+                boolean uvOutOfRange = uvIndex < 0 || uvIndex >= uvs.size();
+
                 Vector3d position = vertices.get(positionIndex);
-                Vector2d uv = uvIndex < 0? finalUvs.get(i) : uvs.get(uvIndex);
-                Vector3d normal = normals.get(normalIndex);
+                Vector2d uv = uvOutOfRange? null : uvs.get(uvIndex);
+                Vector3d normal = normalOutOfRange? null : normals.get(normalIndex);
 
                 finalVertices.add(position);
-                finalUvs.add(uv);
+                finalUvs.add(uv == null? new Vector2d() : uv);
                 finalNormals.add(normal);
                 finalIndices.add(finalVertices.indexOf(position));
             }
             finalIndices.add(Shape3D.INDEX_SEPARATOR);
         }
+
+        LOGGER.log(Level.INFO, "Created mesh with " + faces.size() + " faces");
 
         return new Shape3D(Color.MAGENTA,
                            finalVertices.toArray(new Vector3d[0]),

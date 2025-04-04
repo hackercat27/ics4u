@@ -8,16 +8,17 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import org.joml.Matrix4d;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
 import util.FileUtils;
 import util.Utils;
 
@@ -27,7 +28,8 @@ public class GraphicsRenderer {
     public static final double INT_SCALE = Integer.MAX_VALUE;
 
     private Camera3D camera;
-    private Shape3D cube = FileUtils.getShape(FileUtils.getInputStream("res:/untitled.obj"));
+    private Shape3D cube = FileUtils.getShape(FileUtils.getInputStream("res:/cube.obj"));
+    private BufferedImage texture = FileUtils.getImage(FileUtils.getInputStream("res:/texture.png"));
 
     public GraphicsRenderer() {
         camera = new Camera3D();
@@ -36,24 +38,33 @@ public class GraphicsRenderer {
     double time = 0;
 
     public void update(double deltaTime) {
+
         time += deltaTime;
+//        cube.position.set(0, 0, Math.sin(time) * 2 - 8);
         cube.position.set(0, 0, -5);
+//        cube.scale = Math.sin(time) + 1.1;
+//        cube.position.x = Math.sin(time);
+//        cube.position.y = Math.cos(time);
         cube.rotation.set(new Quaterniond());
         cube.rotation.rotateAxis(time / 2, 0, 1, 0);
         cube.rotation.rotateAxis(time / 3, 0, 0, 1);
     }
 
-    public void render(BufferedImage buffer, double interp) {
+    public void render(Graphics2D g2, double width, double height, double interp) {
 
-        Graphics2D g2 = buffer.createGraphics();
+//        time += 0.1;
 
-        double ratio = (double) buffer.getWidth() / buffer.getHeight();
+
+        System.out.printf("%.2f\r", System.currentTimeMillis() / 1000d);
+        double ratio = width / height;
 
         // translate graphics2d to adhere to NDC instead of the default coord space
-        g2.scale(buffer.getWidth(), -buffer.getHeight());
+        g2.scale(width, -height);
         g2.translate(0.5, -0.5);
 
 //        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+//        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+//        g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
 
         g2.setColor(Color.BLACK);
         // this over paints but i don't care anymore
@@ -85,16 +96,18 @@ public class GraphicsRenderer {
 
         List<Face3D> faces = new ArrayList<>(List.of(cube.getFaces()));
 
-//        faces.sort(Comparator.comparingDouble(o -> -mat.transformPosition(o.getCentroid()).length()));
-        faces.sort(Comparator.comparingDouble(o -> mat.transformDirection(o.getNormal()).dot(0, 0, 1)));
+        Vector3d forwardVector = new Vector3d(0, 0, 1);
 
-        Random r = new Random(0L);
+        faces.sort(Comparator.comparingDouble(o -> -mat.transformPosition(o.getCentroid()).length()));
+//        faces.sort(Comparator.comparingDouble(o -> mat.transformDirection(o.getNormal()).dot(forwardVector)));
+
+        mat.transformDirection(forwardVector);
+        forwardVector.normalize();
 
         for (Face3D face : faces) {
 
-            AffineTransform faceTransform = new AffineTransform();
-
-            Polygon p = face.transform(mat, faceTransform);
+//            Polygon p = new Polygon(new int[] {0, (int) INT_SCALE, 0}, new int[] {0, 0, (int) INT_SCALE}, 3);
+            Polygon p = face.getUV();
 
             Vector3d rotNormal = mat2.transformDirection(face.getNormal()).normalize();
 
@@ -106,28 +119,24 @@ public class GraphicsRenderer {
 
             double a = light * (1 - min) + min;
 
-            Vector4d color = Utils.getColor(cube.getColor());
-
-            color.x *= a;
-            color.y *= a;
-            color.z *= a;
-
-//            g2.setColor(Utils.getColor(color));
-
             AffineTransform af = g2.getTransform();
 
-            g2.transform(faceTransform);
+            try {
+                AffineTransform faceTransform = Utils.getTransform(face, mat);
+                g2.transform(faceTransform);
+            }
+            catch (NoninvertibleTransformException e) {
+                continue;
+            }
 
-            g2.setPaint(new TexturePaint(FileUtils.getImage(null), new Rectangle2D.Double(0, 0, INT_SCALE, INT_SCALE)));
+//            g2.setPaint(new TexturePaint(texture, new Rectangle2D.Double(0, 0, INT_SCALE, INT_SCALE)));
+            g2.setColor(Color.WHITE);
             g2.fill(p);
-            g2.setColor(new Color(0, 0, 0, 1 - (float) a));
+            g2.setColor(new Color(0, 0, 0, 1-(float) a));
             g2.fill(p);
             g2.setTransform(af);
         }
 
-        // similar to scanner.close(), we're responsible to release these resources
-        // (this prevents a memory leak from creating a new graphics object every frame
-        g2.dispose();
     }
 
     private double random(Random r) {
