@@ -254,6 +254,7 @@ public class FileUtils {
         List<Vector3d> finalNormals = new ArrayList<>();
         List<Integer> finalIndices = new ArrayList<>();
 
+        int index = 0;
 
         for (Vector3i[] face : faces) {
             for (int i = 0; i < face.length; i++) {
@@ -272,7 +273,8 @@ public class FileUtils {
                 finalVertices.add(position);
                 finalUvs.add(uv == null? new Vector2d() : uv);
                 finalNormals.add(normal);
-                finalIndices.add(finalVertices.indexOf(position));
+                finalIndices.add(index);
+                index++;
             }
             finalIndices.add(Shape3D.INDEX_SEPARATOR);
         }
