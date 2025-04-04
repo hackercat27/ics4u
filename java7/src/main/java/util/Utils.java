@@ -27,6 +27,9 @@ public class Utils {
 
 
     public static Vector4d getColor(Color color) {
+        if (color == null) {
+            return new Vector4d(1, 1, 1, 1);
+        }
         return new Vector4d(color.getRed() / 255d,
                             color.getGreen() / 255d,
                             color.getBlue() / 255d,
@@ -34,6 +37,9 @@ public class Utils {
     }
 
     public static Color getColor(Vector3d vec) {
+        if (vec == null) {
+            return Color.WHITE;
+        }
         return new Color(
                 (float) Math.min(1, Math.abs(vec.x)),
                 (float) Math.min(1, Math.abs(vec.y)),
@@ -41,6 +47,9 @@ public class Utils {
     }
 
     public static Color getColor(Vector3d vec, double alpha) {
+        if (vec == null) {
+            return Color.WHITE;
+        }
         return new Color(
                 (float) Math.min(1, Math.abs(vec.x)),
                 (float) Math.min(1, Math.abs(vec.y)),
@@ -49,6 +58,9 @@ public class Utils {
     }
 
     public static Color getColor(Vector4d vec) {
+        if (vec == null) {
+            return Color.WHITE;
+        }
         return new Color(
                 (float) Math.min(1, Math.abs(vec.x)),
                 (float) Math.min(1, Math.abs(vec.y)),
