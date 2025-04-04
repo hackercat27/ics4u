@@ -1,15 +1,15 @@
 package util;
 
+import geom.Face3D;
 import java.awt.Color;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Scanner;
-import java.util.function.Consumer;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.NoninvertibleTransformException;
 import org.joml.Matrix4d;
 import org.joml.Quaterniond;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector4d;
+import window.GraphicsRenderer;
 
 public class Utils {
 
@@ -80,6 +80,86 @@ public class Utils {
                 .scale(scale)
                 .rotate(rotation)
                 .translate(position);
+    }
+
+    public static AffineTransform getTransform(Face3D face, Matrix4d transform) throws NoninvertibleTransformException {
+
+        Vector3d[] points = new Vector3d[3];
+        Vector2d[] transformedPoints = new Vector2d[3];
+        Vector2d[] uvPoints = new Vector2d[3];
+
+        System.arraycopy(face.getPoints(), 0, points, 0, points.length);
+        System.arraycopy(face.getUVS(), 0, uvPoints, 0, points.length);
+
+        for (int i = 0; i < transformedPoints.length; i++) {
+
+            Vector3d vec = transform.transformPosition(points[i], new Vector3d());
+            vec.div(vec.z);
+            transformedPoints[i] = new Vector2d(vec);
+        }
+
+        AffineTransform uvsToUnit = getTransform(uvPoints[0], uvPoints[1], uvPoints[2]);
+//        AffineTransform uvsToUnit = new AffineTransform();
+        AffineTransform pointsToUnit = getTransform(transformedPoints[0], transformedPoints[1], transformedPoints[2]);
+
+//        AffineTransform net = new AffineTransform();
+//        net.concatenate(uvsToUnit);
+//        net.concatenate(pointsToUnit);
+
+        uvsToUnit.invert();
+        uvsToUnit.concatenate(pointsToUnit);
+        uvsToUnit.invert();
+
+        return uvsToUnit;
+    }
+
+    public static AffineTransform getTransform(Vector2d desA, Vector2d desB, Vector2d desC) {
+
+        AffineTransform transform = new AffineTransform();
+
+        Vector2d dA = new Vector2d(desA);
+        Vector2d dB = new Vector2d(desB);
+        Vector2d dC = new Vector2d(desC);
+
+        // do all steps in reverse order with the AffineTransform compared to
+        // the JOML vectors because of differing implementations between the libraries
+
+        Vector2d offset = new Vector2d().sub(dA);
+
+        dA.add(offset);
+        dB.add(offset);
+        dC.add(offset);
+
+        double theta = -Math.atan2(dB.y, dB.x);
+        dA.set(new Vector3d(dA, 0).rotateAxis(theta, 0, 0, 1));
+        dB.set(new Vector3d(dB, 0).rotateAxis(theta, 0, 0, 1));
+        dC.set(new Vector3d(dC, 0).rotateAxis(theta, 0, 0, 1));
+
+        double xScale = 1 / dB.x;
+        dA.x *= xScale;
+        dB.x *= xScale;
+        dC.x *= xScale;
+
+        double yScale = 1 / dC.y;
+        dA.y *= yScale;
+        dB.y *= yScale;
+        dC.y *= yScale;
+
+        double xShear = -dC.x;
+        dA.x += dA.y * xShear;
+        dB.x += dB.y * xShear;
+        dC.x += dC.y * xShear;
+
+        transform.shear(xShear, 0);
+
+        transform.scale(xScale, yScale);
+
+        transform.rotate(theta);
+
+        transform.translate(offset.x * GraphicsRenderer.INT_SCALE, offset.y * GraphicsRenderer.INT_SCALE);
+
+        return transform;
+
     }
 
 }
