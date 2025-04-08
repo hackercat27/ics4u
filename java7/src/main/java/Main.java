@@ -1,5 +1,4 @@
 import javax.swing.JFrame;
-import logging.Logger;
 import window.GraphicsPanel;
 import window.GraphicsRenderer;
 
@@ -23,7 +22,6 @@ public class Main {
         frame.setVisible(true);
         frame.pack();
 
-        Logger.log(Logger.Level.VERBOSE, )
     }
 
 }
