@@ -1,6 +1,5 @@
 package geom;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import org.joml.Quaterniond;
@@ -11,32 +10,33 @@ public class Shape3D {
 
     public static final int INDEX_SEPARATOR = -1;
 
-    private Color color;
+    private Material material;
     private Vector3d[] points;
     private Vector2d[] uvs;
     private int[] indices;
 
     public Vector3d position = new Vector3d();
+    public Vector3d lastPosition = new Vector3d();
     public Quaterniond rotation = new Quaterniond();
     public double scale = 1;
 
-    public Shape3D(Color color, Vector3d[] points, Vector2d[] uvs, int[] indices) {
-        this.color = color;
+    public Shape3D(Material material, Vector3d[] points, Vector2d[] uvs, int[] indices) {
+        this.material = material;
         this.points = points;
         this.uvs = uvs;
         this.indices = indices;
     }
 
-    public void setColor(Color color) {
-        this.color = color;
+    public void setMaterial(Material material) {
+        this.material = material;
     }
 
     public Vector3d[] getPoints() {
         return points;
     }
 
-    public Color getColor() {
-        return color;
+    public Material getMaterial() {
+        return material;
     }
 
     public int[] getIndices() {
@@ -58,7 +58,7 @@ public class Shape3D {
                 faceUvs.add(uvs[index]);
             }
             if (index == INDEX_SEPARATOR || isLast) {
-                faces.add(new Face3D(facePoints.toArray(new Vector3d[0]), faceUvs.toArray(new Vector2d[0])));
+                faces.add(new Face3D(material, facePoints.toArray(new Vector3d[0]), faceUvs.toArray(new Vector2d[0])));
                 facePoints.clear();
                 faceUvs.clear();
             }

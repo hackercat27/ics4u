@@ -1,5 +1,6 @@
 package util;
 
+import geom.Material;
 import geom.Shape3D;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -159,6 +160,10 @@ public class FileUtils {
         return in;
     }
 
+    public static BufferedImage getImage(String path) {
+        return getImage(getInputStream(path));
+    }
+
     public static BufferedImage getImage(InputStream in) {
         try {
             if (in == null) {
@@ -183,6 +188,10 @@ public class FileUtils {
         }
     }
 
+    public static Shape3D getShape(String path) {
+        return getShape(getInputStream(path));
+    }
+
     public static Shape3D getShape(InputStream in) {
         if (in == null) {
             return null;
@@ -199,7 +208,6 @@ public class FileUtils {
                 // comment line, ignore
                 return;
             }
-
             else if (line.startsWith("v ")) {
                 String[] args = line.split("\\s+");
 
@@ -208,7 +216,6 @@ public class FileUtils {
                         Double.parseDouble(args[2]),
                         Double.parseDouble(args[3])));
             }
-
             else if (line.startsWith("vt ")) {
                 String[] args = line.split("\\s+");
 
@@ -216,7 +223,6 @@ public class FileUtils {
                             Double.parseDouble(args[1]),
                         1 - Double.parseDouble(args[2])));
             }
-
             else if (line.startsWith("vn ")) {
                 String[] args = line.split("\\s+");
 
@@ -225,7 +231,6 @@ public class FileUtils {
                         Double.parseDouble(args[2]),
                         Double.parseDouble(args[3])).normalize());
             }
-
             else if (line.startsWith("f ")) {
                 String[] args = line.split("\\s+");
 
@@ -281,7 +286,7 @@ public class FileUtils {
 
         LOGGER.log(Level.INFO, "Created mesh with " + faces.size() + " faces");
 
-        return new Shape3D(Color.MAGENTA,
+        return new Shape3D(new Material("Material.Dummy", getImage("res:/textures/paper.png")),
                            finalVertices.toArray(new Vector3d[0]),
                            finalUvs.toArray(new Vector2d[0]),
 //                           finalNormals.toArray(new Vector3d[0]),

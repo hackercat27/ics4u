@@ -1,42 +1,21 @@
 package geom;
 
-import java.awt.Color;
-import java.awt.Paint;
 import java.awt.Polygon;
-import java.awt.TexturePaint;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import org.joml.Matrix4d;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
-import org.joml.Vector4d;
-import util.Utils;
 import window.GraphicsRenderer;
 
 public class Face3D {
 
     private Vector3d[] points;
     private Vector2d[] uvs;
-    private BufferedImage texture;
-    private Vector4d color;
+    private Material material;
 
-    public Face3D(Vector3d[] points, Vector2d[] uvs) {
+    public Face3D(Material material, Vector3d[] points, Vector2d[] uvs) {
         this.points = points;
         this.uvs = uvs;
-
-        for (int i = 0; i < uvs.length; i++) {
-            if (uvs[i] == null) {
-                uvs[i] = switch(i) {
-                    case 1 -> new Vector2d(1, 0);
-                    case 2 -> new Vector2d(0, 1);
-                    default -> new Vector2d(0, 0);
-                };
-            }
-        }
-
-        if (points.length < 3) {
-            System.out.println("Warning: created degenerate 3d face with less than 3 vertices!");
-        }
+        this.material = material;
     }
 
     public Vector3d[] getPoints() {
@@ -106,12 +85,10 @@ public class Face3D {
         return new Polygon(x, y, uvs.length);
     }
 
-    public Paint getPaint() {
-        if (texture != null) {
-            final double scale = GraphicsRenderer.INT_SCALE;
-            return new TexturePaint(texture, new Rectangle2D.Double(0, 0, scale, scale));
-        }
-        return Utils.getColor(color);
+    public Material getMaterial() {
+        return material;
     }
+
+
 
 }
