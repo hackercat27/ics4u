@@ -69,8 +69,12 @@ public class Shape3D {
         return faces.toArray(new Face3D[0]);
     }
 
-    public Vector3d getPosition() {
-        return position;
+    public void update(double deltaTime) {
+        lastPosition.set(position);
+    }
+
+    public Vector3d getPosition(double t) {
+        return lastPosition.lerp(position, t);
     }
 
     public Quaterniond getRotation() {

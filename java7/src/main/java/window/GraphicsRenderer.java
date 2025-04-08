@@ -6,13 +6,10 @@ import geom.Shape3D;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
-import java.awt.TexturePaint;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
@@ -28,8 +25,7 @@ public class GraphicsRenderer {
     public static final double INT_SCALE = Integer.MAX_VALUE;
 
     private Camera3D camera;
-    private Shape3D cube = FileUtils.getShape(FileUtils.getInputStream("res:/cube.obj"));
-    private BufferedImage texture = FileUtils.getImage(FileUtils.getInputStream("res:/texture.png"));
+    private Shape3D cube = FileUtils.getShape(FileUtils.getInputStream("res:/objects/paper.obj"));
 
     public GraphicsRenderer() {
         camera = new Camera3D();
@@ -39,23 +35,21 @@ public class GraphicsRenderer {
 
     public void update(double deltaTime) {
 
+        cube.update(deltaTime);
+
         time += deltaTime;
 //        cube.position.set(0, 0, Math.sin(time) * 2 - 8);
-        cube.position.set(0, 0, -5);
+        cube.position.set(0, 0, -8);
 //        cube.scale = Math.sin(time) + 1.1;
 //        cube.position.x = Math.sin(time);
 //        cube.position.y = Math.cos(time);
         cube.rotation.set(new Quaterniond());
-        cube.rotation.rotateAxis(time / 2, 0, 1, 0);
-        cube.rotation.rotateAxis(time / 3, 0, 0, 1);
+        cube.rotation.rotateAxis(Math.PI / 2, 1, 0, 0);
+//        cube.rotation.rotateAxis(-Math.PI / 2, 0, 1, 0);
     }
 
     public void render(Graphics2D g2, double width, double height, double interp) {
 
-//        time += 0.1;
-
-
-        System.out.printf("%.2f\r", System.currentTimeMillis() / 1000d);
         double ratio = width / height;
 
         // translate graphics2d to adhere to NDC instead of the default coord space
@@ -63,7 +57,8 @@ public class GraphicsRenderer {
         g2.translate(0.5, -0.5);
 
 //        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-//        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+//        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 //        g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
 
         g2.setColor(Color.BLACK);
@@ -82,7 +77,7 @@ public class GraphicsRenderer {
         Matrix4d perspectiveTransform = new Matrix4d().perspective(camera.getFOV(interp), ratio, near, far);
         Matrix4d cameraTransform = Utils.getCameraTransform(camera.getPosition(interp), camera.getRotation(interp), 1);
 
-        Matrix4d objectTransform = Utils.getTransform(cube.position, cube.rotation, cube.scale);
+        Matrix4d objectTransform = Utils.getTransform(cube.getPosition(interp), cube.rotation, cube.scale);
 
         Matrix4d mat = new Matrix4d()
                 .mul(perspectiveTransform)
@@ -129,10 +124,9 @@ public class GraphicsRenderer {
                 continue;
             }
 
-//            g2.setPaint(new TexturePaint(texture, new Rectangle2D.Double(0, 0, INT_SCALE, INT_SCALE)));
-            g2.setColor(Color.WHITE);
+            g2.setPaint(face.getMaterial().getPaint());
             g2.fill(p);
-            g2.setColor(new Color(0, 0, 0, 1-(float) a));
+            g2.setColor(new Color(0, 0, 0, 1 - (float) a));
             g2.fill(p);
             g2.setTransform(af);
         }
