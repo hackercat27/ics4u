@@ -1,4 +1,5 @@
 import javax.swing.JFrame;
+import logging.Logger;
 import window.GraphicsPanel;
 import window.GraphicsRenderer;
 
@@ -6,11 +7,12 @@ public class Main {
 
     public static void main(String[] args) {
 
+        // enforce hardware accel because otherwise bad performance :(
         System.setProperty("sun.java2d.opengl", "true");
-//        System.out.println(System.getProperty("sun.java2d.opengl"));
+        System.setProperty("hackercat.logging.minlevel", "verbose");
 
         JFrame frame = new JFrame("java7 2d arrays");
-        GraphicsPanel panel = new GraphicsPanel(frame);
+        GraphicsPanel panel = new GraphicsPanel();
 
         panel.setGraphicsRenderer(new GraphicsRenderer());
 
@@ -19,8 +21,9 @@ public class Main {
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+        frame.pack();
+
+        Logger.log(Logger.Level.VERBOSE, )
     }
-
-
 
 }
