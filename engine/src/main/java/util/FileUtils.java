@@ -1,5 +1,6 @@
 package util;
 
+
 import geom.Material;
 import geom.Shape3D;
 import java.awt.Color;
@@ -15,16 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import logging.Level;
+import logging.Logger;
 import org.joml.Vector2d;
 import org.joml.Vector3d;
 import org.joml.Vector3i;
 
 public class FileUtils {
-
-    private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
 
     public enum Directive {
         FILE("file:", ""),
@@ -155,7 +154,7 @@ public class FileUtils {
 
         // if the inputstream is STILL null, then that means we didn't find anything.
         if (in == null) {
-            LOGGER.log(Level.WARNING, "Couldn't find file '%s'", simplePath);
+            Logger.log(Level.WARN, "Couldn't find file '%s'", simplePath);
         }
         return in;
     }
@@ -284,7 +283,7 @@ public class FileUtils {
             finalIndices.add(Shape3D.INDEX_SEPARATOR);
         }
 
-        LOGGER.log(Level.INFO, "Created mesh with " + faces.size() + " faces");
+        logging.Logger.log(Level.VERBOSE, "Created mesh with " + faces.size() + " faces");
 
         return new Shape3D(new Material("Material.Dummy", getImage("res:/textures/paper.png")),
                            finalVertices.toArray(new Vector3d[0]),
