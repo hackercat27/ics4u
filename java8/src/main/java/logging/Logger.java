@@ -34,7 +34,14 @@ public class Logger {
 
         Level minLevel;
         try {
-            minLevel = Level.valueOf(System.getProperty("hackercat.logging.level").toUpperCase());
+
+            String p = System.getProperty("hackercat.logging.level");
+
+            if (p == null) {
+                throw new IllegalArgumentException("Property not set");
+            }
+
+            minLevel = Level.valueOf(p.toUpperCase());
         }
         catch (IllegalArgumentException ignored) {
             minLevel = Level.INFO; // default to just info
