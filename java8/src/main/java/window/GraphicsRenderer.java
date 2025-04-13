@@ -3,6 +3,7 @@ package window;
 import geom.Camera3D;
 import geom.Face3D;
 import geom.Shape3D;
+import io.Input;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
@@ -12,9 +13,11 @@ import java.awt.geom.NoninvertibleTransformException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
+import logging.Level;
+import logging.Logger;
 import org.joml.Matrix4d;
 import org.joml.Quaterniond;
+import org.joml.Vector2d;
 import org.joml.Vector3d;
 import util.FileUtils;
 import util.Utils;
@@ -29,22 +32,46 @@ public class GraphicsRenderer {
 
     public GraphicsRenderer() {
         camera = new Camera3D();
+
+        Input.addBind("mwheeldown", "toward");
+        Input.addBind("mwheelup", "back");
+
+        Input.addBind("f", "test");
     }
 
     double time = 0;
+
+    double depth = -8;
 
     public void update(double deltaTime) {
 
         cube.update(deltaTime);
 
+        if (Input.isActionJustPressed("test")) {
+            Logger.log(Level.INFO, "test! :)");
+        }
+
+        if (Input.isActionPressed("toward")) {
+            depth -= 0.5;
+        }
+        if (Input.isActionJustPressed("back")) {
+            depth += 0.5;
+        }
+
         time += deltaTime;
 //        cube.position.set(0, 0, Math.sin(time) * 2 - 8);
-        cube.position.set(0, 0, -8);
+
+        Vector2d p = Input.getCursorPos();
+        p.mul(Math.abs(depth));
+
+        cube.position.set(p, depth);
+//        cube.position.set(0, 0, -8);
 //        cube.scale = Math.sin(time) + 1.1;
 //        cube.position.x = Math.sin(time);
 //        cube.position.y = Math.cos(time);
         cube.rotation.set(new Quaterniond());
-        cube.rotation.rotateAxis(Math.PI / 2, 1, 0, 0);
+        cube.rotation.rotateAxis(Math.PI / 2 * p.x / 8, 0, 1, 0);
+        cube.rotation.rotateAxis(Math.PI / 2 * (1 - (p.y / 8)), 1, 0, 0);
 //        cube.rotation.rotateAxis(-Math.PI / 2, 0, 1, 0);
     }
 
@@ -56,10 +83,8 @@ public class GraphicsRenderer {
         g2.scale(width, -height);
         g2.translate(0.5, -0.5);
 
-//        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 //        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-//        g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
 
         g2.setColor(Color.BLACK);
         // this over paints but i don't care anymore
@@ -126,14 +151,10 @@ public class GraphicsRenderer {
 
             g2.setPaint(face.getMaterial().getPaint());
             g2.fill(p);
-            g2.setColor(new Color(0, 0, 0, 1 - (float) a));
-            g2.fill(p);
+//            g2.setColor(new Color(0, 0, 0, 1 - (float) a));
+//            g2.fill(p);
             g2.setTransform(af);
         }
 
-    }
-
-    private double random(Random r) {
-        return 4 * Math.pow(r.nextDouble() - 0.5, 3) + 0.5;
     }
 }
