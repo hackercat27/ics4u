@@ -8,9 +8,9 @@ public class Main {
 
         // enforce hardware accel because otherwise bad performance :(
         System.setProperty("sun.java2d.opengl", "true");
-        System.setProperty("hackercat.logging.minlevel", "verbose");
+        System.setProperty("hackercat.logging.level", "verbose");
 
-        JFrame frame = new JFrame("java7 2d arrays");
+        JFrame frame = new JFrame("java8");
         GraphicsPanel panel = new GraphicsPanel();
 
         panel.setGraphicsRenderer(new GraphicsRenderer());
