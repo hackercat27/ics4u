@@ -48,14 +48,14 @@ public class Input implements KeyListener,
         return instance;
     }
 
-    public static void addBind(String action, String key) {
+    public static void addBind(String key, String action) {
         if (key == null || action == null) {
             return;
         }
         synchronized (binds) {
             // overwrite existing binds with same key
             binds.removeIf(bind -> bind.action.equals(action));
-            binds.add(new Bind(key, action));
+            binds.add(new Bind(action, key));
         }
     }
 
@@ -93,7 +93,7 @@ public class Input implements KeyListener,
 
         synchronized (binds) {
             for (Bind bind : binds) {
-                if (bind.key.equals(key)) {
+                if (bind.key.equalsIgnoreCase(key)) {
                     b.add(bind);
                 }
             }

@@ -33,7 +33,7 @@ public class GraphicsRenderer {
     public GraphicsRenderer() {
         camera = new Camera3D();
 
-        Input.addBind("mwheeldown", "toward");
+        Input.addBind("mwheeldown", "front");
         Input.addBind("mwheelup", "back");
 
         Input.addBind("f", "test");
@@ -47,24 +47,27 @@ public class GraphicsRenderer {
 
         cube.update(deltaTime);
 
-        if (Input.isActionJustPressed("test")) {
+        if (Input.isActionPressed("test")) {
             Logger.log(Level.INFO, "test! :)");
         }
 
-        if (Input.isActionPressed("toward")) {
-            depth -= 0.5;
+        if (Input.isActionJustPressed("front")) {
+            depth += 0.5;
         }
         if (Input.isActionJustPressed("back")) {
-            depth += 0.5;
+            depth -= 0.5;
         }
 
         time += deltaTime;
 //        cube.position.set(0, 0, Math.sin(time) * 2 - 8);
 
         Vector2d p = Input.getCursorPos();
-        p.mul(Math.abs(depth));
 
-        cube.position.set(p, depth);
+        double m = -depth * depth;
+
+        p.mul(Math.abs(m));
+
+        cube.position.set(p, m);
 //        cube.position.set(0, 0, -8);
 //        cube.scale = Math.sin(time) + 1.1;
 //        cube.position.x = Math.sin(time);

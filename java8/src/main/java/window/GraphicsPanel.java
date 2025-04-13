@@ -63,12 +63,12 @@ public class GraphicsPanel extends JPanel {
             @Override
             public void execute() {
                 synchronized (graphicsRendererLock) {
-                    Input.get().update();
-                    Input.get().setScreenSize(new Vector2d(getWidth(), getHeight()));
                     if (graphicsRenderer != null) {
                         lastUpdateTimeNanos = System.nanoTime();
                         graphicsRenderer.update(getDeltaTime());
                     }
+                    Input.get().update();
+                    Input.get().setScreenSize(new Vector2d(getWidth(), getHeight()));
                 }
             }
         };
