@@ -1,15 +1,22 @@
 package util;
 
+import java.util.function.DoubleSupplier;
+
 public abstract class Runner extends Thread {
 
     private double currentUps;
-    private double maxUps;
     private double deltaTimeSeconds = 0;
 
+    private DoubleSupplier getMaxUps;
 
     public Runner(double maxUps, String threadName) {
         super(threadName);
-        this.maxUps = Math.abs(maxUps);
+        getMaxUps = () -> Math.abs(maxUps);
+    }
+
+    public Runner(DoubleSupplier maxUps, String threadName) {
+        super(threadName);
+        getMaxUps = maxUps;
     }
 
     @Override
@@ -19,7 +26,7 @@ public abstract class Runner extends Thread {
         for (;;) {
 
             // executions per second -> nanoseconds per executions
-            double maxTimeNanos = 1e9 / maxUps;
+            double maxTimeNanos = 1e9 / getMaxUps.getAsDouble();
 
             double startTimeNanos = System.nanoTime();
 
