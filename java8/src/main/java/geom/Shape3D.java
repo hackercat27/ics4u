@@ -74,7 +74,7 @@ public class Shape3D {
     }
 
     public Vector3d getPosition(double t) {
-        return lastPosition.lerp(position, t);
+        return new Vector3d(lastPosition).lerp(position, t);
     }
 
     public Quaterniond getRotation() {
