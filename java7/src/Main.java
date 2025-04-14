@@ -43,6 +43,25 @@ public class Main {
         return true;
     }
 
+    public static double[][] add(double[][] A, double[][] B) {
+        if (!isRectangular(A) || !isRectangular(B)) {
+            return null;
+        }
+        if (A.length != B.length || A[0].length != B[0].length) {
+            return null;
+        }
+
+        double[][] C = new double[A.length][A[0].length];
+
+        for (int y = 0; y < A.length; y++) {
+            for (int x = 0; x < A[y].length; x++) {
+                C[y][x] = A[y][x] + B[y][x];
+            }
+        }
+
+        return C;
+    }
+
     public static String toString(double[][] matrix) {
 
         if (matrix == null || !isRectangular(matrix)) {
@@ -51,7 +70,6 @@ public class Main {
         if (matrix.length == 1) {
             return Arrays.toString(matrix[0]);
         }
-
 
         String leftTop = "⎡";
         String leftMid = "⎢";
