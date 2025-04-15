@@ -225,6 +225,10 @@ public class Input implements KeyListener,
 
         for (Bind b : bs) {
             if (pressed) {
+                // hack to prevent key auto repeat
+                if (b.lastPressed > b.lastReleased) {
+                    continue;
+                }
                 b.lastPressed = currentTick;
             }
             else {

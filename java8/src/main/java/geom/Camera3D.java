@@ -1,5 +1,6 @@
 package geom;
 
+import io.Input;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
@@ -20,16 +21,56 @@ public class Camera3D {
     }
 
     public Camera3D() {
+        Input.addBind("w", "move_w");
+        Input.addBind("a", "move_a");
+        Input.addBind("s", "move_s");
+        Input.addBind("d", "move_d");
+
+        Input.addBind("left", "look_left");
+        Input.addBind("right", "look_right");
     }
 
+    private double yaw, pitch;
 
     private double time;
     public void update(double deltaTime) {
+
+        double speed = 1;
+        double angleSpeed = Math.toRadians(110);
+
         lastRotation.set(rotation);
         lastPosition.set(position);
         lastFOV = fov;
 
         time += deltaTime;
+
+        Vector3d delta = new Vector3d();
+
+        if (Input.isActionPressed("look_right")) {
+            yaw += angleSpeed * deltaTime;
+        }
+        if (Input.isActionPressed("look_left")) {
+            yaw -= angleSpeed * deltaTime;
+        }
+
+        if (Input.isActionPressed("move_w")) {
+            delta.z += 1;
+        }
+        if (Input.isActionPressed("move_s")) {
+            delta.z -= 1;
+        }
+        if (Input.isActionPressed("move_a")) {
+            delta.x += 1;
+        }
+        if (Input.isActionPressed("move_d")) {
+            delta.x -= 1;
+        }
+
+        delta.rotateAxis(-yaw, 0, 1, 0);
+
+        rotation.set(new Quaterniond());
+        rotation.rotateAxis(yaw, 0, 1, 0);
+        position.add(delta.mul(deltaTime).mul(speed));
     }
 
     public void setAngles(double yaw, double pitch) {

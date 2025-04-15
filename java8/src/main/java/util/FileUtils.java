@@ -13,7 +13,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Consumer;
 import javax.imageio.ImageIO;
@@ -187,11 +189,26 @@ public class FileUtils {
         }
     }
 
-    public static Shape3D getShape(String path) {
-        return getShape(getInputStream(path));
+    public static String getParentDirectory(String path) {
+        String[] segments = simplifyPath(path).split("/");
+
+        StringBuilder pathBuilder = new StringBuilder();
+
+        for (int i = 0; i < segments.length - 1; i++) {
+            boolean isLast = i == segments.length - 2;
+            pathBuilder.append(segments[i]);
+            if (!isLast) {
+                pathBuilder.append("/");
+            }
+        }
+        return pathBuilder.toString();
     }
 
-    public static Shape3D getShape(InputStream in) {
+    public static Shape3D getShape(String path) {
+
+        InputStream in = getInputStream(path);
+        String directory = getParentDirectory(path);
+
         if (in == null) {
             return null;
         }
@@ -202,36 +219,38 @@ public class FileUtils {
 
         List<Vector3i[]> faces = new ArrayList<>();
 
-        forEach(in, "\n", line -> {
-            if (line.startsWith("#")) {
+        Map<String, String> materialProperties = new HashMap<>();
+
+        forEach(in, "\n", objLine -> {
+            if (objLine.startsWith("#")) {
                 // comment line, ignore
                 return;
             }
-            else if (line.startsWith("v ")) {
-                String[] args = line.split("\\s+");
+            else if (objLine.startsWith("v ")) {
+                String[] args = objLine.split("\\s+");
 
                 vertices.add(new Vector3d(
                         Double.parseDouble(args[1]),
                         Double.parseDouble(args[2]),
                         Double.parseDouble(args[3])));
             }
-            else if (line.startsWith("vt ")) {
-                String[] args = line.split("\\s+");
+            else if (objLine.startsWith("vt ")) {
+                String[] args = objLine.split("\\s+");
 
                 uvs.add(new Vector2d(
                             Double.parseDouble(args[1]),
                         1 - Double.parseDouble(args[2])));
             }
-            else if (line.startsWith("vn ")) {
-                String[] args = line.split("\\s+");
+            else if (objLine.startsWith("vn ")) {
+                String[] args = objLine.split("\\s+");
 
                 normals.add(new Vector3d(
                         Double.parseDouble(args[1]),
                         Double.parseDouble(args[2]),
                         Double.parseDouble(args[3])).normalize());
             }
-            else if (line.startsWith("f ")) {
-                String[] args = line.split("\\s+");
+            else if (objLine.startsWith("f ")) {
+                String[] args = objLine.split("\\s+");
 
                 Vector3i[] face = new Vector3i[args.length - 1];
 
@@ -249,6 +268,18 @@ public class FileUtils {
                     face[i] = vertex;
                 }
                 faces.add(face);
+            }
+            else if (objLine.startsWith("mtllib ")) {
+                String[] args = objLine.split("\\s+");
+
+                forEach(getInputStream(directory + "/" + args[1]), "\n", mtlLine -> {
+
+                    if (mtlLine.startsWith("map_Kd ")) {
+                        materialProperties.put("map_Kd", mtlLine.split("\\s+")[1]);
+                    }
+
+                });
+
             }
 
         });
@@ -285,7 +316,10 @@ public class FileUtils {
 
         logging.Logger.log(Level.VERBOSE, "Created mesh with " + faces.size() + " faces");
 
-        return new Shape3D(new Material("Material.Dummy", getImage("res:/textures/paper.png")),
+
+
+
+        return new Shape3D(new Material("Material.Dummy", getImage(materialProperties.get("map_Kd"))),
                            finalVertices.toArray(new Vector3d[0]),
                            finalUvs.toArray(new Vector2d[0]),
 //                           finalNormals.toArray(new Vector3d[0]),

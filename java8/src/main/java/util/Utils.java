@@ -94,6 +94,9 @@ public class Utils {
         for (int i = 0; i < transformedPoints.length; i++) {
 
             Vector3d vec = transform.transformPosition(points[i], new Vector3d());
+            if (vec.z < 0) {
+                return null;
+            }
             vec.div(vec.z);
             transformedPoints[i] = new Vector2d(vec);
         }

@@ -54,16 +54,14 @@ public class Shape3D {
             boolean isLast = i >= indices.length - 1;
 
             if (index >= 0 && index < points.length) {
-                facePoints.add(points[index]);
-                faceUvs.add(uvs[index]);
+                facePoints.add(new Vector3d(points[index]));
+                faceUvs.add(new Vector2d(uvs[index]));
             }
             if (index == INDEX_SEPARATOR || isLast) {
                 faces.add(new Face3D(material, facePoints.toArray(new Vector3d[0]), faceUvs.toArray(new Vector2d[0])));
                 facePoints.clear();
                 faceUvs.clear();
             }
-
-
         }
 
         return faces.toArray(new Face3D[0]);
