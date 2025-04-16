@@ -292,8 +292,7 @@ public class FileUtils {
         int index = 0;
 
         for (Vector3i[] face : faces) {
-            for (int i = 0; i < face.length; i++) {
-                Vector3i faceVertex = face[i];
+            for (Vector3i faceVertex : face) {
                 int positionIndex = faceVertex.x;
                 int uvIndex = faceVertex.y;
                 int normalIndex = faceVertex.z;
@@ -302,11 +301,11 @@ public class FileUtils {
                 boolean uvOutOfRange = uvIndex < 0 || uvIndex >= uvs.size();
 
                 Vector3d position = vertices.get(positionIndex);
-                Vector2d uv = uvOutOfRange? null : uvs.get(uvIndex);
-                Vector3d normal = normalOutOfRange? null : normals.get(normalIndex);
+                Vector2d uv = uvOutOfRange ? null : uvs.get(uvIndex);
+                Vector3d normal = normalOutOfRange ? null : normals.get(normalIndex);
 
                 finalVertices.add(position);
-                finalUvs.add(uv == null? new Vector2d() : uv);
+                finalUvs.add(uv == null ? new Vector2d() : uv);
                 finalNormals.add(normal);
                 finalIndices.add(index);
                 index++;

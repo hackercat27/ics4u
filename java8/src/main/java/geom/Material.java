@@ -12,12 +12,15 @@ public class Material {
 
     private BufferedImage texture;
     private Vector4d color;
+    private String name;
 
     public Material(String name, BufferedImage texture) {
+        this.name = name;
         this.texture = texture;
     }
 
     public Material(String name, Vector4d color) {
+        this.name = name;
         this.color = color;
     }
 
@@ -29,4 +32,7 @@ public class Material {
         return Utils.getColor(color);
     }
 
+    public String getName() {
+        return name;
+    }
 }

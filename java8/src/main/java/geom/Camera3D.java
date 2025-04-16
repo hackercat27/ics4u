@@ -15,6 +15,7 @@ public class Camera3D {
     private double lastFOV = fov;
 
     public Camera3D(Vector3d position, Quaterniond rotation, double fov) {
+        this();
         this.position.set(position);
         this.rotation.set(rotation);
         this.fov = fov;
@@ -28,11 +29,12 @@ public class Camera3D {
 
         Input.addBind("left", "look_left");
         Input.addBind("right", "look_right");
+        Input.addBind("up", "look_up");
+        Input.addBind("down", "look_down");
     }
 
     private double yaw, pitch;
 
-    private double time;
     public void update(double deltaTime) {
 
         double speed = 1;
@@ -42,8 +44,6 @@ public class Camera3D {
         lastPosition.set(position);
         lastFOV = fov;
 
-        time += deltaTime;
-
         Vector3d delta = new Vector3d();
 
         if (Input.isActionPressed("look_right")) {
@@ -51,6 +51,12 @@ public class Camera3D {
         }
         if (Input.isActionPressed("look_left")) {
             yaw -= angleSpeed * deltaTime;
+        }
+        if (Input.isActionPressed("look_up")) {
+            pitch -= angleSpeed * deltaTime;
+        }
+        if (Input.isActionPressed("look_down")) {
+            pitch += angleSpeed * deltaTime;
         }
 
         if (Input.isActionPressed("move_w")) {
@@ -69,14 +75,9 @@ public class Camera3D {
         delta.rotateAxis(-yaw, 0, 1, 0);
 
         rotation.set(new Quaterniond());
-        rotation.rotateAxis(yaw, 0, 1, 0);
-        position.add(delta.mul(deltaTime).mul(speed));
-    }
-
-    public void setAngles(double yaw, double pitch) {
-        rotation.set(new Quaterniond());
         rotation.rotateAxis(pitch, 1, 0, 0);
         rotation.rotateAxis(yaw, 0, 1, 0);
+        position.add(delta.mul(deltaTime).mul(speed));
     }
 
     public double getFOV(double t) {

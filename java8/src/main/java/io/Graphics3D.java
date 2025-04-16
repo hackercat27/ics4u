@@ -59,7 +59,6 @@ public class Graphics3D {
         faces.removeIf(face -> mat.transformDirection(face.getNormal()).dot(forwardVector) < 0);
 
         faces.sort(Comparator.comparingDouble(o -> -mat.transformPosition(o.getCentroid()).length()));
-//        drawQueue.sort(Comparator.comparingDouble(o -> mat.transformDirection(o.getNormal()).dot(forwardVector)));
 
         mat.transformDirection(forwardVector);
         forwardVector.normalize();

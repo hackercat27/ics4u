@@ -175,7 +175,6 @@ public class Input implements KeyListener,
         currentTick++;
     }
 
-
     private void wheelEvent(MouseWheelEvent e) {
 
         Bind[] b;
@@ -187,10 +186,10 @@ public class Input implements KeyListener,
         }
 
         if (delta < 0) {
-            b = getBindsByKey("mwheelup");
+            b = getBindsByKey("wheelup");
         }
         else {
-            b = getBindsByKey("mwheeldown");
+            b = getBindsByKey("wheeldown");
         }
 
         for (Bind bind : b) {

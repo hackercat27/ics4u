@@ -103,7 +103,6 @@ public class GraphicsPanel extends JPanel {
                 double tickProgress = deltaNanos / targetTickTimeNanos;
 
                 graphicsRenderer.render(g2, getWidth(), getHeight(), Math.clamp(tickProgress, 0, 1));
-
             }
         }
     }

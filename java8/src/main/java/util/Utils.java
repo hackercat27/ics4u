@@ -102,12 +102,7 @@ public class Utils {
         }
 
         AffineTransform uvsToUnit = getTransform(uvPoints[0], uvPoints[1], uvPoints[2]);
-//        AffineTransform uvsToUnit = new AffineTransform();
         AffineTransform pointsToUnit = getTransform(transformedPoints[0], transformedPoints[1], transformedPoints[2]);
-
-//        AffineTransform net = new AffineTransform();
-//        net.concatenate(uvsToUnit);
-//        net.concatenate(pointsToUnit);
 
         uvsToUnit.invert();
         uvsToUnit.concatenate(pointsToUnit);

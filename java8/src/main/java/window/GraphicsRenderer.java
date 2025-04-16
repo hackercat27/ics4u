@@ -27,11 +27,10 @@ public class GraphicsRenderer {
     public GraphicsRenderer() {
         camera = new Camera3D();
 
-        Input.addBind("mwheeldown", "front");
-        Input.addBind("mwheelup", "back");
+        Input.addBind("wheeldown", "front");
+        Input.addBind("wheelup", "back");
     }
 
-    private double time = 0;
     private double depth = -1.5;
 
     public void update(double deltaTime) {
@@ -41,6 +40,7 @@ public class GraphicsRenderer {
         double paperScale = 12.5;
 
         marker.update(deltaTime);
+        paper.update(deltaTime);
 
         if (Input.isActionJustPressed("front")) {
             depth += 0.5;
@@ -48,8 +48,6 @@ public class GraphicsRenderer {
         if (Input.isActionJustPressed("back")) {
             depth -= 0.5;
         }
-
-        time += deltaTime;
 
         Vector2d p = Input.getCursorPos();
 
