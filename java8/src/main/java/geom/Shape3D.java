@@ -16,9 +16,11 @@ public class Shape3D {
     private int[] indices;
 
     public Vector3d position = new Vector3d();
-    public Vector3d lastPosition = new Vector3d();
+    private Vector3d lastPosition = new Vector3d();
     public Quaterniond rotation = new Quaterniond();
+    private Quaterniond lastRotation = new Quaterniond();
     public double scale = 1;
+    private double lastScale = 1;
 
     public Shape3D(Material material, Vector3d[] points, Vector2d[] uvs, int[] indices) {
         this.material = material;
@@ -69,17 +71,19 @@ public class Shape3D {
 
     public void update(double deltaTime) {
         lastPosition.set(position);
+        lastRotation.set(rotation);
+        lastScale = scale;
     }
 
     public Vector3d getPosition(double t) {
         return new Vector3d(lastPosition).lerp(position, t);
     }
 
-    public Quaterniond getRotation() {
-        return rotation;
+    public Quaterniond getRotation(double t) {
+        return new Quaterniond(lastRotation).slerp(rotation, t);
     }
 
-    public double getScale() {
-        return scale;
+    public double getScale(double t) {
+        return org.joml.Math.lerp(lastScale, scale, t);
     }
 }
