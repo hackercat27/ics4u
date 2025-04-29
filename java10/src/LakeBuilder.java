@@ -1,6 +1,13 @@
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Random;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 
 /*
@@ -25,172 +32,260 @@ import javax.swing.*;
  */
 
 
+public class LakeBuilder {
 
-public class LakeBuilder
-{
+    public static final long seed;
+
+    static {
+        seed = new Random().nextLong();
+    }
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new LakeBuilder();
-            }
-        });
-    } //end main
+        SwingUtilities.invokeLater(LakeBuilder::new);
+    }
+
 
     //constants
-    final static int SCRSIZE = 720;	//screen size
-    final static int SIZE = 12; //board size
-    final static int sqPIXEL = 22; //pixels per square
-    final static int NUM_LAND = (SIZE * SIZE /2); //number of land tiles
-    final static int LAND = 1;		//constant for land tile
-    final static int EMPTY = 0;		//constant for empty tile
-    final static int LAKE = 33;		//this is just any number used for LAKE and OCEAN
-    final static int OCEAN = 89;
-    final static Color COLOURBACK = new Color(242,242,242);
-    final static Color COLOUREMPTY = new Color(222,222,222);
-    final static Color COLOURLAND = new Color(100,200,100);
-    final static Color COLOURLAKE = new Color(100,100,255);
-    final static Color COLOUROCEAN = new Color(10,10,130);
+    public static final int PREFERRED_SCREEN_SIZE = 720;
+    public static final int BOARD_SIZE = 12;
+    public static final int PREFERRED_TILE_SIZE = 48;
+    public static final int OUTLINE_MARGIN = 3;
 
-    //global variables
-    int[][] board = new int[SIZE][SIZE];
+    public static final int NUM_LAND = (BOARD_SIZE * BOARD_SIZE /2);
+
+    public static final Color COLOUR_BACKGROUND = new Color(242, 242, 242);
+
+    public enum Tile {
+
+        LAND(new Color(100, 200, 100)),
+        OCEAN(new Color(10, 10, 130)),
+        LAKE(new Color(100, 100, 255)),
+        EMPTY(new Color(222, 222, 222)),
+        OUT_OF_MAP(new Color(0xFF00FF));
+
+        public final Color color;
+        Tile(Color color) {
+            this.color = color;
+        }
+    }
+
+    private Tile[][] board = new Tile[BOARD_SIZE][BOARD_SIZE];
+
+    public Tile getTile(int x, int y) {
+        if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
+            return Tile.OUT_OF_MAP;
+        }
+        return board[y][x];
+    }
+
+    public void setTile(Tile t, int x, int y) {
+        if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
+            return ;
+        }
+        board[y][x] = t;
+    }
 
     //constructor
-    LakeBuilder() {
+    public LakeBuilder() {
         initGame();
-        createAndShowGUI();
+        createAndShowWindow();
     }
 
     /*PROBLEM 3: When half of the squares are land, the land is scattered quite a lot into little islands.
      *           Find a way to make a random map that has the land in bigger chunks.
      */
-    void initGame() {
+    public void initGame() {
         //clear board
-        for (int i=0;i<SIZE;i++) {
-            for (int j=0;j<SIZE;j++) {
-                board[i][j]=EMPTY;
+        for (int y = 0; y< BOARD_SIZE; y++) {
+            for (int x = 0; x< BOARD_SIZE; x++) {
+                setTile(Tile.EMPTY, x, y);
             }
         }
 
         //check setup
-        if (SCRSIZE / SIZE < 20) {
+        if (PREFERRED_SCREEN_SIZE / BOARD_SIZE < PREFERRED_TILE_SIZE) {
             System.out.println("Board size too small for number of squares! Aborting ...");
             System.exit(0);
         }
 
-        makeRandomMap();
+//        makeRandomMap();
         //The method below doesn't exist yet. It is for PROBLEM #3.
-        //makeContinents();
+        makeContinents();
     }
 
     //creating a new map
-    void makeRandomMap() {
-        int i,j;
+    private void makeRandomMap() {
+
+        Random random = new Random(seed);
+
         boolean done = false;
         int landTiles = 0;
-        while (!done) {
-            i = (int)(Math.random() * SIZE);
-            j = (int)(Math.random() * SIZE);
 
-            if (board[i][j] == EMPTY) {
-                board[i][j] = LAND;
+        while (!done) {
+            int y = random.nextInt(BOARD_SIZE);
+            int x = random.nextInt(BOARD_SIZE);
+
+            if (getTile(x, y) == Tile.EMPTY) {
+                setTile(Tile.LAND, x, y);
                 landTiles++;
-                if (landTiles >= NUM_LAND) done=true;
+                if (landTiles >= NUM_LAND) {
+                    done = true;
+                }
             }
         }
     }
 
-    /*PROBLEM 1: Fix the function "findLakes()" so that it colours all empty squares that are adjacent to this one.
+    private void makeContinents() {
+
+        final double LAND_THRESHOLD = 2;
+
+        for (int y = 0; y < BOARD_SIZE; y++) {
+            for (int x = 0; x < BOARD_SIZE; x++) {
+
+                if (getNoise(x, y) > LAND_THRESHOLD) {
+                    setTile(Tile.LAND, x, y);
+                }
+                else {
+                    setTile(Tile.EMPTY, x, y);
+                }
+
+            }
+        }
+
+    }
+
+    public static double getNoise(double x, double y) {
+
+        Random rand = new Random(seed);
+        Random trueRand = new Random();
+        int voronoiCount = 10;
+
+        class vec2 {
+            double x;
+            double y;
+        }
+
+        vec2[] points = new vec2[voronoiCount];
+
+        for (int i = 0; i < points.length; i++) {
+            points[i] = new vec2();
+            points[i].x = rand.nextDouble() * BOARD_SIZE;
+            points[i].y = rand.nextDouble() * BOARD_SIZE;
+        }
+
+        double distanceSum = 0;
+        double minDistance = Double.POSITIVE_INFINITY;
+
+        vec2 salt = new vec2();
+        salt.x = (biasedRandomDouble(trueRand) - 0.5) * BOARD_SIZE / 6;
+        salt.y = (biasedRandomDouble(trueRand) - 0.5) * BOARD_SIZE / 6;
+
+        for (vec2 point : points) {
+
+            double distance = Math.hypot(point.x - x + salt.x, point.y - y + salt.y);
+            distanceSum += distance;
+            minDistance = Math.min(minDistance, distance);
+        }
+
+        return 4 - minDistance;
+
+    }
+
+    private static double biasedRandomDouble(Random random) {
+        double x = random.nextDouble();
+        double ret = 2 * Math.pow(x - 0.5, 3) + 0.5;
+        return ret;
+//        return random.nextDouble();
+    }
+
+    /*PROBLEM 1: Fix the function "fillLake()" so that it colours all empty squares that are adjacent to this one.
      *			 You'll need to use a recursive method to solve this.
      *PROBLEM 2: Once you have solved problem 2, now set things up so that if any part
      *           of a lake touches the edge of the board it becomes an ocean.
      */
-    void findLakes(int x, int y) {
+    public void floodLake(int x, int y) {
         //call subroutine to colour in all contiguous lake squares
 
-        if (board[x][y] == EMPTY) board[x][y] = LAKE;
+        if (getTile(x, y) != Tile.EMPTY) {
+            return;
+        }
+
+        boolean isEdgeTile = x == 0 || x == BOARD_SIZE - 1 || y == 0 || y == BOARD_SIZE - 1;
+
+        if (isEdgeTile) {
+            setTile(Tile.OCEAN, x, y);
+        }
+        else {
+            setTile(Tile.LAKE, x, y);
+        }
+
+        floodLake(x + 1, y);
+        floodLake(x - 1, y);
+        floodLake(x, y + 1);
+        floodLake(x, y - 1);
     }
 
-
-    //creation of GUI
-    void createAndShowGUI() {
+    public void createAndShowWindow() {
         DrawingPanel panel = new DrawingPanel();
 
         JFrame frame = new JFrame("LakeBuilder");
-        frame.setDefaultCloseOperation( JFrame.EXIT_ON_CLOSE );
-        Container content = frame.getContentPane();
-        content.add(panel, BorderLayout.CENTER);
-        frame.setSize(100, 100); //may not be needed since my JPanel has a preferred size
-        frame.setResizable(false);
-        frame.setLocationRelativeTo( null );
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(panel);
+
         frame.pack();
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-
-        //once the panel is visible, initialize the graphics. (Is this before paintComponent is run?)
-        panel.initGraphics();
-
     }
 
-    @SuppressWarnings("serial")
-    class DrawingPanel extends JPanel	//inner class
-    {
-        int jpanW, jpanH;
-        int blockX, blockY;
+    class DrawingPanel extends JPanel {
 
         public DrawingPanel() {
-            setBackground(COLOURBACK);
-            //Because the panel size variables don't get initialized until the panel is displayed,
-            //we can't do a lot of graphics initialization here in the constructor.
-            this.setPreferredSize(new Dimension(SIZE*sqPIXEL, SIZE*sqPIXEL));
+            setBackground(COLOUR_BACKGROUND);
+            this.setPreferredSize(new Dimension(BOARD_SIZE * PREFERRED_TILE_SIZE, BOARD_SIZE * PREFERRED_TILE_SIZE));
             MyMouseListener ml = new MyMouseListener();
             addMouseListener(ml);
         }
 
-        //** Called by createGUI()
-        void initGraphics() {
-            jpanW = this.getSize().width;
-            jpanH = this.getSize().height;
-            blockX = (int)((jpanW/SIZE)+0.5);
-            blockY = (int)((jpanH/SIZE)+0.5);
-            // System.out.println("init");
+        public int getBlockWidth() {
+            return getScale() / BOARD_SIZE;
         }
 
+        public int getBlockHeight() {
+            return getScale() / BOARD_SIZE;
+        }
+
+        public int getScale() {
+            return getHeight();
+        }
+
+        @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
 
-            //Draw white grid
-            g.setColor(Color.WHITE);
-            for (int i=0;i<SIZE;i++) {
-                g.drawLine(blockX*i,0,blockX*i,jpanH);
-                g.drawLine(0,blockY*i,jpanW,blockY*i);
+            g.setColor(Color.BLACK);
+            g.fillRect(0, 0, getWidth(), getHeight());
+
+            if (g instanceof Graphics2D g2) {
+                g2.translate(getWidth() / 2 - getHeight() / 2, 0);
             }
 
-            for (int i=0;i<SIZE;i++) {
-                for (int j=0;j<SIZE;j++) {
-                    colourRect(i,j,g);
+            g.setColor(Color.WHITE);
+            g.fillRect(-1, 0, getHeight(), getHeight());
+
+            for (int y = 0; y < BOARD_SIZE; y++) {
+                for (int x = 0; x < BOARD_SIZE; x++) {
+                    colourRect(x, y, g);
                 }
             }
         }
 
-        void colourRect(int i, int j, Graphics g) {
+        public void colourRect(int x, int y, Graphics g) {
 
-            int terrain = board[i][j];
+            Tile terrain = getTile(x, y);
 
-            if (terrain == EMPTY) {
-                g.setColor(COLOUREMPTY);
-                g.fillRect(blockX*i+1, blockY*j+1, blockX-2, blockY-2);
-            }
-            if (terrain == LAND) {
-                g.setColor(COLOURLAND);
-                g.fillRect(blockX*i+1, blockY*j+1, blockX-2, blockY-2);
-            }
-            if (terrain == LAKE) {
-                g.setColor(COLOURLAKE);
-                g.fillRect(blockX*i+1, blockY*j+1, blockX-2, blockY-2);
-            }
-            if (terrain == OCEAN) {
-                g.setColor(COLOUROCEAN);
-                g.fillRect(blockX*i+1, blockY*j+1, blockX-2, blockY-2);
-            }
+            g.setColor(terrain.color);
+            g.fillRect(getBlockWidth() * x + OUTLINE_MARGIN, getBlockHeight() * y + OUTLINE_MARGIN,
+                       getBlockWidth() - 2 * OUTLINE_MARGIN, getBlockHeight() - 2 * OUTLINE_MARGIN);
         }
 
         class MyMouseListener extends MouseAdapter	{	//inner class inside DrawingPanel
@@ -198,23 +293,22 @@ public class LakeBuilder
                 int x = e.getX();
                 int y = e.getY();
                 //calculate which square you clicked on
-                int i = (int)  x/blockX;
-                int j = (int) y/blockY;	// blockY/y
+                int boardX = (x - getWidth() / 2 + getHeight() / 2) / getBlockWidth();
+                int boardY = y / getBlockHeight();
 
                 //allow the right mouse button to toggle/cycle the terrain
-                if (e.getButton() != MouseEvent.BUTTON1) {
-                    switch (board[i][j]) {
-                        case LAND:
-                            board[i][j] = EMPTY;
-                            break;
-                        default:
-                            board[i][j] = LAND;
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    if (getTile(boardX, boardY) == Tile.LAND) {
+                        setTile(Tile.EMPTY, boardX, boardY);
                     }
-                    repaint();
-                    return;
+                    else {
+                        setTile(Tile.LAND, boardX, boardY);
+                    }
+                }
+                if (e.getButton() == MouseEvent.BUTTON1){
+                    floodLake(boardX, boardY);
                 }
 
-                findLakes(i,j);
                 repaint();
             }
         } //end of MyMouseListener class
