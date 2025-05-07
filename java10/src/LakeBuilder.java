@@ -44,16 +44,16 @@ public class LakeBuilder {
         SwingUtilities.invokeLater(LakeBuilder::new);
     }
 
+    public static final int BOARD_SIZE = 65;
+    public static final int PREFERRED_TILE_SIZE = 24;
+    public static final int OUTLINE_MARGIN = 0;
 
-    //constants
-    public static final int PREFERRED_SCREEN_SIZE = 720;
-    public static final int BOARD_SIZE = 12;
-    public static final int PREFERRED_TILE_SIZE = 48;
-    public static final int OUTLINE_MARGIN = 3;
+    private int workingX = -1;
+    private int workingY = -1;
 
     public static final int NUM_LAND = (BOARD_SIZE * BOARD_SIZE /2);
 
-    public static final Color COLOUR_BACKGROUND = new Color(242, 242, 242);
+    public static final Color COLOR_BACKGROUND = new Color(242, 242, 242);
 
     public enum Tile {
 
@@ -102,19 +102,14 @@ public class LakeBuilder {
             }
         }
 
-        //check setup
-        if (PREFERRED_SCREEN_SIZE / BOARD_SIZE < PREFERRED_TILE_SIZE) {
-            System.out.println("Board size too small for number of squares! Aborting ...");
-            System.exit(0);
-        }
 
 //        makeRandomMap();
-        //The method below doesn't exist yet. It is for PROBLEM #3.
         makeContinents();
     }
 
     //creating a new map
     private void makeRandomMap() {
+
 
         Random random = new Random(seed);
 
@@ -137,7 +132,7 @@ public class LakeBuilder {
 
     private void makeContinents() {
 
-        final double LAND_THRESHOLD = 2;
+        final double LAND_THRESHOLD = 2.3;
 
         for (int y = 0; y < BOARD_SIZE; y++) {
             for (int x = 0; x < BOARD_SIZE; x++) {
@@ -158,7 +153,9 @@ public class LakeBuilder {
 
         Random rand = new Random(seed);
         Random trueRand = new Random();
-        int voronoiCount = 10;
+        double scale = BOARD_SIZE * BOARD_SIZE / 144d;
+        int voronoiCount = (int) (10 * scale);
+
 
         class vec2 {
             double x;
@@ -177,13 +174,13 @@ public class LakeBuilder {
         double minDistance = Double.POSITIVE_INFINITY;
 
         vec2 salt = new vec2();
-        salt.x = (biasedRandomDouble(trueRand) - 0.5) * BOARD_SIZE / 6;
-        salt.y = (biasedRandomDouble(trueRand) - 0.5) * BOARD_SIZE / 6;
+        salt.x = (biasedRandomDouble(trueRand) - 0.5) * 2.5d;
+        salt.y = (biasedRandomDouble(trueRand) - 0.5) * 2.5d;
 
         for (vec2 point : points) {
 
             double distance = Math.hypot(point.x - x + salt.x, point.y - y + salt.y);
-            distanceSum += distance;
+            distanceSum += distance * BOARD_SIZE / 12d;
             minDistance = Math.min(minDistance, distance);
         }
 
@@ -213,20 +210,55 @@ public class LakeBuilder {
         boolean isEdgeTile = x == 0 || x == BOARD_SIZE - 1 || y == 0 || y == BOARD_SIZE - 1;
 
         if (isEdgeTile) {
-            setTile(Tile.OCEAN, x, y);
-        }
-        else {
-            setTile(Tile.LAKE, x, y);
+            floodOcean(x, y);
+            return;
         }
 
-        floodLake(x + 1, y);
-        floodLake(x - 1, y);
-        floodLake(x, y + 1);
+        setTile(Tile.LAKE, x, y);
+
+        sleep(x, y);
         floodLake(x, y - 1);
+        sleep(x, y);
+        floodLake(x, y + 1);
+        sleep(x, y);
+        floodLake(x + 1, y);
+        sleep(x, y);
+        floodLake(x - 1, y);
     }
 
+    public void floodOcean(int x, int y) {
+
+        if (getTile(x, y) != Tile.EMPTY && getTile(x, y) != Tile.LAKE) {
+            return;
+        }
+
+        setTile(Tile.OCEAN, x, y);
+
+        sleep(x, y);
+        floodOcean(x, y - 1);
+        sleep(x, y);
+        floodOcean(x + 1, y);
+        sleep(x, y);
+        floodOcean(x, y + 1);
+        sleep(x, y);
+        floodOcean(x - 1, y);
+    }
+
+    private void sleep(int x, int y) {
+        workingX = x;
+        workingY = y;
+        try {
+            panel.repaint();
+            Thread.sleep(1);
+        }
+        catch (InterruptedException e) {
+        }
+    }
+
+    DrawingPanel panel;
+
     public void createAndShowWindow() {
-        DrawingPanel panel = new DrawingPanel();
+        panel = new DrawingPanel();
 
         JFrame frame = new JFrame("LakeBuilder");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -240,27 +272,29 @@ public class LakeBuilder {
     class DrawingPanel extends JPanel {
 
         public DrawingPanel() {
-            setBackground(COLOUR_BACKGROUND);
+            setBackground(COLOR_BACKGROUND);
             this.setPreferredSize(new Dimension(BOARD_SIZE * PREFERRED_TILE_SIZE, BOARD_SIZE * PREFERRED_TILE_SIZE));
             MyMouseListener ml = new MyMouseListener();
             addMouseListener(ml);
         }
 
-        public int getBlockWidth() {
+        public double getBlockWidth() {
             return getScale() / BOARD_SIZE;
         }
 
-        public int getBlockHeight() {
+        public double getBlockHeight() {
             return getScale() / BOARD_SIZE;
         }
 
-        public int getScale() {
+        public double getScale() {
             return getHeight();
         }
 
         @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
+
+//            System.out.println("Painted");
 
             g.setColor(Color.BLACK);
             g.fillRect(0, 0, getWidth(), getHeight());
@@ -274,27 +308,39 @@ public class LakeBuilder {
 
             for (int y = 0; y < BOARD_SIZE; y++) {
                 for (int x = 0; x < BOARD_SIZE; x++) {
-                    colourRect(x, y, g);
+                    colorRect(x, y, g);
                 }
             }
         }
 
-        public void colourRect(int x, int y, Graphics g) {
+        public void colorRect(int x, int y, Graphics g) {
 
             Tile terrain = getTile(x, y);
 
-            g.setColor(terrain.color);
-            g.fillRect(getBlockWidth() * x + OUTLINE_MARGIN, getBlockHeight() * y + OUTLINE_MARGIN,
-                       getBlockWidth() - 2 * OUTLINE_MARGIN, getBlockHeight() - 2 * OUTLINE_MARGIN);
+            if (x == workingX && y == workingY) {
+                g.setColor(Color.RED);
+            }
+            else {
+                g.setColor(terrain.color);
+            }
+
+//            if (g instanceof Graphics2D g2) {
+//                g.fillRect(getBlockWidth() * x + OUTLINE_MARGIN, getBlockHeight() * y + OUTLINE_MARGIN,
+//                           getBlockWidth() - 2 * OUTLINE_MARGIN, getBlockHeight() - 2 * OUTLINE_MARGIN);
+//            }
+//            else {
+                g.fillRect((int) Math.floor(getBlockWidth() * x + OUTLINE_MARGIN), (int) Math.floor(getBlockHeight() * y + OUTLINE_MARGIN),
+                           (int) Math.ceil(getBlockWidth() - 2 * OUTLINE_MARGIN), (int) Math.ceil(getBlockHeight() - 2 * OUTLINE_MARGIN));
+//            }
         }
 
-        class MyMouseListener extends MouseAdapter	{	//inner class inside DrawingPanel
+        public class MyMouseListener extends MouseAdapter	{	//inner class inside DrawingPanel
             public void mouseClicked(MouseEvent e) {
                 int x = e.getX();
                 int y = e.getY();
                 //calculate which square you clicked on
-                int boardX = (x - getWidth() / 2 + getHeight() / 2) / getBlockWidth();
-                int boardY = y / getBlockHeight();
+                int boardX = (int) ((x - getWidth() / 2d + getHeight() / 2d) / getBlockWidth());
+                int boardY = (int) (y / getBlockHeight());
 
                 //allow the right mouse button to toggle/cycle the terrain
                 if (e.getButton() == MouseEvent.BUTTON3) {
@@ -305,11 +351,13 @@ public class LakeBuilder {
                         setTile(Tile.LAND, boardX, boardY);
                     }
                 }
-                if (e.getButton() == MouseEvent.BUTTON1){
-                    floodLake(boardX, boardY);
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    new Thread(() -> {
+                        floodLake(boardX, boardY);
+                        workingX = -1;
+                        workingY = -1;
+                    }, "painter").start();
                 }
-
-                repaint();
             }
         } //end of MyMouseListener class
 
