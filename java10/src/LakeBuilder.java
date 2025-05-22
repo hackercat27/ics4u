@@ -44,7 +44,7 @@ public class LakeBuilder {
         SwingUtilities.invokeLater(LakeBuilder::new);
     }
 
-    public static final int BOARD_SIZE = 65;
+    public static final int BOARD_SIZE = 64;
     public static final int PREFERRED_TILE_SIZE = 24;
     public static final int OUTLINE_MARGIN = 0;
 
@@ -103,8 +103,8 @@ public class LakeBuilder {
         }
 
 
-//        makeRandomMap();
-        makeContinents();
+        makeRandomMap();
+//        makeContinents();
     }
 
     //creating a new map
@@ -132,7 +132,7 @@ public class LakeBuilder {
 
     private void makeContinents() {
 
-        final double LAND_THRESHOLD = 2.3;
+        final double LAND_THRESHOLD = 2;
 
         for (int y = 0; y < BOARD_SIZE; y++) {
             for (int x = 0; x < BOARD_SIZE; x++) {
